@@ -1,0 +1,473 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    /*floralwhite #f8f8f8 mintcream*/
+    background-color: ivory;
+}
+
+h1{
+    color:green;
+    text-align: center;
+}
+#messages{
+    border: 1px red;
+}
+ th,tr,td{
+    border: 1px solid;
+}
+ .centr{
+     text-align: center;
+ }
+.centr-v{
+    /*top: 50%;*/
+    /*left: 50%;*/
+    /*margin-right: -50%;*/
+    /*transform: translate(-50%, -50%)*/
+
+    /*min-height: 50em;*/
+    /*display: table-cell;*/
+    /*vertical-align: middle*/
+
+    /*margin-top: auto;*/
+    /*margin-bottom: auto;*/
+    /*margin-left: auto;*/
+    /*margin-right: auto;*/
+
+    /*display: inline-block;*/
+     /*vertical-align: middle;*/
+ }
+.outer {
+    position: relative;
+    /*border:2px solid;*/
+    width: 100%;
+    /*height: 500px;*/
+    /*text-align: center;*/
+    /*vertical-align: middle;*/
+    background-color: #ffc;
+}
+.inner {
+    width: 50%;
+    position: absolute;
+    top: 50%;
+    left:50%;
+    transform: translate(-50%,20%);
+    /*border:1px solid;*/
+
+    /*height: 50px;*/
+    /*position: absolute;*/
+    /*top: 0;*/
+    /*bottom: 0;*/
+    /*margin: auto 0;*/
+    /*display: inline-block;*/
+    /*width: 400px;*/
+    /*height: 400px;*/
+
+    /*background-color: #fcc;*/
+}
+ .img-product-card {
+     width: 100%; /* Ширина изображений */
+     height: 300px;  /*Высота изображении */
+     object-fit: cover; /* Вписываем фотографию в область */
+ }
+
+.table-modal tr > td {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.table-modal tr > th {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.table-modal{
+    width: 100%;
+    table-layout:fixed;
+    text-align: center;
+    /*text-align: center;*/
+}
+
+.table-modal th{
+    text-align: center;
+    /*text-align: center;*/
+}
+
+.table-modal tr > td > input{
+    /*height:100%;*/
+    width: 100%;
+}
+
+.table-modal tr > td > img {
+    /*height:100%;> img*/
+    width: 30%;
+}
+
+.table-image-product {
+    text-align: center;
+}
+
+.table-image-product tr > td {
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.table-image-product tr > td > img {
+    /*height:100%;> img*/
+    width: 50%;
+}
+
+.tag{
+    width: 120px;
+    text-align: left;
+    overflow: auto;
+    overflow-x:scroll;
+}
+
+.td-hidden{
+    display: none;
+}
+
+#myBtn {
+    /*background-color: #9C27B0;*/
+    color: white;
+    padding: 12px 16px;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    width: 180px;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    position: relative;
+    /*background-color: #E1BEE7;*/
+    margin: auto;
+    padding: 0;
+    /*border: 5px solid #7B1FA2;*/
+    width: 70%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    -webkit-animation-name: animatetop;
+    -webkit-animation-duration: 0.4s;
+    animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+@-webkit-keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+    from {top:-300px; opacity:0}
+    to {top:0; opacity:1}
+}
+
+.close {
+    color: silver;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.modal-header {
+    padding: 2px 16px;
+    /*background-color: #9C27B0;*/
+    color: black;
+}
+
+.modal-body {padding: 2px 16px;}
+
+.modal-footer {
+    padding: 2px 16px;
+    /*background-color: #9C27B0;*/
+    color: white;
+}
+
+.title-cart span{
+    margin-left: 30%;
+}
+
+* {box-sizing: border-box;}
+
+.img-magnifier-container {
+    position: relative;
+}
+
+.img-magnifier-glass {
+    position: absolute;
+    border: 3px solid #000;
+    /*border-radius: 50%;*/
+    cursor: none;
+    /*Установите размер стекла лупы:*/
+    width: 200px;
+    height: 200px;
+}
+
+.img-zoom-container {
+    position: relative;
+}
+.img-zoom-lens {
+    position: absolute;
+    /*border: 1px solid #d4d4d4;*/
+    /*установить размер объектива:*/
+    width: 40px;
+    height: 40px;
+}
+.img-zoom-result {
+    border: 1px solid #d4d4d4;
+    /*установите размер результирующего div:*/
+    /*width: 300px;*/
+    /* height: 300px;*/
+    width: 150px;
+    height: 200px;
+}
+
+.sidenav {
+    width: 130px;
+    position: fixed;
+    z-index: 1;
+    top: 100px;
+    left: 10px;
+    background: #eee;
+    overflow-x: hidden;
+    padding: 8px 0;
+}
+
+.sidenav a {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #2196F3;
+    display: block;
+}
+
+.sidenav a:hover {
+    color: #064579;
+}
+
+.main {
+    margin-left: 140px; /* Такая же ширина, как боковая панель + Левая позиция в px */
+    /*font-size: 28px; Увеличенный текст для включения прокрутки */
+    /*width: 100%;*/
+    padding: 0 10px;
+}
+
+@media screen and (max-height: 450px) {
+    .sidenav {padding-top: 15px;}
+    .sidenav a {font-size: 18px;}
+}
+
+/* Навигационная панель */
+.navbar {
+    overflow: hidden;
+    background-color: #333;
+    position: fixed; /* Установите навигационную панель в фиксированное положение */
+    top: 0; /* Расположите навигационную панель в верхней части страницы */
+    width: 100%; /* Полная ширина */
+    z-index: 10;
+}
+
+/* Ссылки в панели навигации */
+.navbar a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+/* Изменение фона при наведении курсора мыши */
+.navbar a:hover {
+    background: #ddd;
+    color: black;
+}
+.table-content-center{
+    text-align: center;
+}
+
+.my-cart {
+    border-radius: 6px;
+    background: #fff;
+    padding: 1rem;
+    box-shadow: 2px 3px 10px rgba(0, 0, 0, .2);
+}
+
+.my-btn {
+    color: #42b983;
+    position: relative;
+    border-radius: 99px;
+    border: 1px solid #42b983;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 0.5rem 1.5rem;
+    font-weight: 700;
+    outline: none;
+    background: #fff;
+    transition: all 0.22s;
+    cursor: pointer;
+    margin-right: 1rem;
+}
+
+.my-btn.primary {
+    background: #42b983;
+    color: #fff;
+}
+
+.my-btn:active {
+    box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.my-btn:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+input[type=file] {
+    display: block;
+}
+.preview {
+    display: flex;
+    flex-wrap: wrap;
+    padding: .5rem;
+}
+
+.preview-image {
+    position: relative;
+    margin-bottom: .5rem;
+    margin-right: .5rem;
+    overflow: hidden;
+}
+
+.preview-image.removing {
+    transform: scale(0);
+    transition: transform .3s;
+}
+
+.preview-image img {
+    display: block;
+    width: 180px;
+    height: auto;
+}
+
+.preview-image:hover .preview-remove {
+    opacity: 1;
+}
+
+.preview-image:hover .preview-info {
+    bottom: 0;
+}
+
+.preview-remove {
+    opacity: 0;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-weight: bold;
+    background: rgba(255, 255, 255, .5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity .22s;
+}
+
+.preview-info {
+    position: absolute;
+    right: 0;
+    bottom: -30px;
+    left: 0;
+    height: 24px;
+    font-size: .8rem;
+    background: rgba(255, 255, 255, .5);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 5px;
+    transition: bottom .22s;
+}
+
+.preview-info-progress {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: #42b983;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width .22s;
+}
+.edit-user{
+    padding: 5px;
+    margin: 0;
+    background-color: antiquewhite;
+}
+.edit-phone{
+
+    background-color: gainsboro;
+}
+.edit-post-office{
+
+     background-color: lightblue;
+ }
+.container-edit-phone-post-office{
+    margin:0;
+}
+.edit-address{
+    background-color: moccasin;
+}
+.input-with{
+    width: 100%;
+}
+.disabled-el{
+    pointer-events: none;
+}
+.disabled a{
+    pointer-events: none; /* делаем элемент неактивным для взаимодействия */
+    cursor: default; /*  курсор в виде стрелки */
+    color: #888;/* цвет текста серый */
+}
+.caption-table{
+    -moz-transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+}
+.caption-table-vertical{
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+}
