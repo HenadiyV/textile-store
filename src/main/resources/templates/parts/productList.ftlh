@@ -67,6 +67,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="title-cart">
+                        <#if basketId??><a href="/basket/delete/${basketId}" class="btn btn-danger">Очистити</a></#if>
                         <div id="place-basket"> </div>
                     </div>
                     <div class="body-cart">
@@ -78,8 +79,8 @@
                             <label for="phone">Ваш телефон</label> <br/>
                             <input type="text" name="phone" id="phone" value=""/><br/>
 
-                            <label for="info">Додаткова інформація до замовленя</label>
-                            <textarea name="info" id="info" cols="30" rows="3" style="width: 100%"></textarea><br/>
+                            <label for="info">Додаткова інформація до замовленя</label><br/>
+                            <textarea name="info" id="info" cols="30" rows="3" style="width: 50%"></textarea><br/>
                             <input type="hidden" name="token" id="token_ordering"/>
                                 <input type="hidden" class="input-with" name="_csrf"  value="${_csrf.token}"/>
                              <button class="btn btn-primary mt-1" type="submit">Замовити</button>
@@ -122,7 +123,7 @@
                                 <div class="col-sm-6 table-content-center">
                                     <form action="/basket/add-product" method="post">
 
-                                <input type="text" class="input-with" name="_csrf" value="${_csrf.token}"/>
+                                <input type="hidden" class="input-with" name="_csrf" value="${_csrf.token}"/>
                                     <span id="place_price"></span><br/>
                                     <span id="place_summ"></span><br/>
                                     <label for="size">Введіть кількість</label> <br/>
@@ -130,11 +131,11 @@
                                     <input type="hidden" name="productId" id="productId"/>
                                     <input type="hidden" name="price" id="price" readonly/>
                                     <input type="hidden" name="img" id="img_product" />
-                                    <input type="text" name="token" id="token_cookie" />
+                                    <input type="hidden" name="token" id="token_cookie" />
 
                                     <label for="info">Додаткова інформація</label>
                                     <textarea name="info" id="info" cols="30" rows="3" style="width: 100%"></textarea><br/>
-                                        <button type="submit" id="add_to_basket">Додати до кошика</button>
+                                        <button class="btn btn-primary mt-1" type="submit" id="add_to_basket">Додати до кошика</button>
                                     </form>
                                </div>
                             </div>

@@ -13,18 +13,20 @@ public class BasketDto {
     private String info;
     private String token;
     private String dat;
+    private String dat_clear;
     private List<BasketProductDto> basketProductDtoList;
 
     public BasketDto() {
     }
 
-    public BasketDto(Long id,String username, String phone, String info, String token, String dat) {
+    public BasketDto(Long id,String username, String phone, String info, String token, String dat,String dat__clear) {
         this.id = id;
         this.username = username;
         this.phone = phone;
         this.info = info;
         this.token = token;
         this.dat = dat;
+        this.dat_clear = dat_clear;
     }
 
     public BasketDto(String username, String phone, String info, String token) {
@@ -56,6 +58,10 @@ public class BasketDto {
 
     public String getDat() {
         return dat;
+    }
+
+    public String getDat_clear() {
+        return dat_clear;
     }
 
     public List<BasketProductDto> getBasketProductDtoList() {

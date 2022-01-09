@@ -13,6 +13,7 @@ public final class  MyCookies  {
     private final static String NAME_COOKIE="textile-basket";
 
 public static void deleteCookie(HttpServletRequest request, HttpServletResponse response){
+
     try{
         Cookie[] cookies = request.getCookies();
 

@@ -34,6 +34,13 @@ public class ImageProduct implements Serializable {
     public ImageProduct() {
     }
 
+    public ImageProduct(String imgProduct, boolean showcase, String info, int amount) {
+        this.imgProduct = imgProduct;
+        this.showcase = showcase;
+        this.info = info;
+        this.amount = amount;
+    }
+
     public Long getId() {
         return id;
     }

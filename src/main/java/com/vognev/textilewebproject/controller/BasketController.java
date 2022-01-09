@@ -44,7 +44,7 @@ public class BasketController extends HttpServlet {
             @RequestParam("token")String token
     ){
         BasketProductDto basketProductDto = new BasketProductDto(productId,info,size,price,img,token);
-        basketService.saveBasketProduct(basketProductDto);
+        basketProductService.saveBasketProduct(basketProductDto);
     return"redirect:/";
     }
 
@@ -55,12 +55,27 @@ public class BasketController extends HttpServlet {
             @RequestParam("phone")String phone,
             @RequestParam("info")String info,
             @RequestParam("token")String token,
+
             HttpServletRequest request,
             HttpServletResponse response
     ){
         BasketDto basketDto= new BasketDto(username,phone,info,token);
         MyCookies.deleteCookie(request,response);
        // basketService.createOrder(basketDto);
+        return"redirect:/";
+    }
+
+    @GetMapping("delete/{id}")
+    public String deleteBasket(@PathVariable("id")Long basketId,
+                               HttpServletRequest request,
+                               HttpServletResponse response
+    ){
+        System.out.println("deleteBasket "+basketId);
+
+        basketService.deleteBasketById(basketId);
+
+        MyCookies.deleteCookie(request,response);
+
         return"redirect:/";
     }
 }

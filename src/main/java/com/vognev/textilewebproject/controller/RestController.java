@@ -1,17 +1,16 @@
 package com.vognev.textilewebproject.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vognev.textilewebproject.model.*;
 import com.vognev.textilewebproject.model.dto.*;
+import com.vognev.textilewebproject.model.util.Constants;
+import com.vognev.textilewebproject.model.util.MyCookies;
 import com.vognev.textilewebproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 /**
@@ -43,6 +42,9 @@ public class RestController {
 
     @Autowired
     private BasketService basketService;
+
+    @Autowired
+    private BasketProductService basketProductService;
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -257,6 +259,7 @@ public class RestController {
             @RequestBody BasketProductDto basketProductDto
 
     ){
+        System.out.println("addProductToBasket 262");
         System.out.println(basketProductDto.getProductId());
         System.out.println(basketProductDto.getSize());
         System.out.println(basketProductDto.getInfo());
@@ -264,7 +267,7 @@ public class RestController {
         System.out.println(basketProductDto.getSize());
         System.out.println(basketProductDto.getPrice());
         System.out.println(basketProductDto.getImg());
-        basketService.saveBasketProduct(basketProductDto);
+        basketProductService.saveBasketProduct(basketProductDto);
 
     }
 
@@ -272,16 +275,27 @@ public class RestController {
     @GetMapping("/basket-view/{token}")
     public List<BasketProductDto> getBasketProductList(@PathVariable String token){
 
+    if(token.length()==Constants.LENGHT_TOKEN){
         return basketService.getBasketDtoListToToken(token);
+     }
+        return null;
     }
 
 
-    @GetMapping("/delet-basket-pordut/{token}/{id}")
+    @GetMapping("/delete-basket-product/{token}/{id}")
     public List<BasketProductDto> deleteBasketProduct(
             @PathVariable String token,
-            @PathVariable Long id
+            @PathVariable Long id,
+            HttpServletRequest request,
+            HttpServletResponse response
     ){
-        return basketService.deleteBasketProductInBasket(id,token);
+        List<BasketProductDto> basketProductDtoList = basketService.deleteBasketProductInBasket(id,token);
+        if(basketProductDtoList!=null){
+            return basketProductDtoList;
+        }else{
+            MyCookies.deleteCookie(request, response);
+        }
+        return null;
     }
 
 

@@ -1,5 +1,6 @@
 package com.vognev.textilewebproject.service;
 
+import com.vognev.textilewebproject.model.BasketProduct;
 import com.vognev.textilewebproject.model.ImageProduct;
 import com.vognev.textilewebproject.model.Product;
 import com.vognev.textilewebproject.model.dto.ImageProductDto;
@@ -133,20 +134,27 @@ public class ProductService {
    }
 
 
-    public void updateProductSallingSize(Long product_id,Double balance,boolean operator){
+    void updateProductSallingSize(Long product_id, Double balance, boolean operator){
         try{
             Product product = productRepository.getById(product_id);
-if(operator) {
-    product.setSelling_size(product.getSelling_size() + balance);
-}else{
-    product.setSelling_size(product.getSelling_size() - balance);
-}
+
+                if(operator) {
+                    product.setSelling_size(product.getSelling_size() + balance);
+                }else{
+                    product.setSelling_size(product.getSelling_size() - balance);
+                }
             productRepository.save(product);
         }catch(Exception ex){
             System.out.println("updateProductSallingSizeError ");
             ex.printStackTrace();
         }
     }
+
+
+//   public void updateBasketProductSallingSize(Long product_id,double siz){
+//        Product product = productRepository.getById(product_id);
+//       updateProductSallingSize(product_id,siz,false);
+//   }
 
 
     public List<ProductDto> searchProduct(String name){
@@ -284,7 +292,6 @@ summ: 0*/
                         resultFilename = file.getOriginalFilename();
                     }
                     imageProduct.setImgProduct(resultFilename);
-                   // imageProduct.setAmount(amount);
                     imageProduct.setShowcase(true);
                 } catch (Exception e) {
                     System.out.println("updateImageProductError");
@@ -396,6 +403,11 @@ summ: 0*/
                     System.out.println("save file error");
                     e.printStackTrace();
                 }
+            }else{
+
+              ImageProduct imageProduct = new ImageProduct("noimage.png",true," ",0);
+
+                imageProductService.saveImageProduct(imageProduct);
             }
         }
         return imgSet;

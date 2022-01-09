@@ -3,13 +3,14 @@ package com.vognev.textilewebproject.service;
 import com.vognev.textilewebproject.model.*;
 import com.vognev.textilewebproject.model.dto.BasketDto;
 import com.vognev.textilewebproject.model.dto.BasketProductDto;
-import com.vognev.textilewebproject.model.util.DateHelper;
-import com.vognev.textilewebproject.repository.BasketProductRepository;
+import com.vognev.textilewebproject.model.util.Constants;
 import com.vognev.textilewebproject.repository.BasketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -50,63 +51,117 @@ public class BasketService {
     @Autowired
     private CartService cartService;
 
-    private Basket getBasketToToken(String token){
+
+     void saveBasket(Basket basket){
+        basketRepository.save(basket);
+    }
+
+
+     List<Basket> getBasketList(){
+        return basketRepository.findAll();
+    }
+
+     Basket getBasketToToken(String token){
+
         return basketRepository.searchBasketToToken(token);
     }
 
 
-    public void saveBasketProduct(BasketProductDto basketProductDto){
+     List<Basket> getBasketListToClearDate(){
+        try {
 
-        Basket basket = getBasketToToken(basketProductDto.getToken());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd" );// HH:mm:ss
 
-        Date dat= new  Date();
+        Date dat = new Date();
 
-        if(basket==null){
-            basket= new Basket();
-            basket.setToken(basketProductDto.getToken());
-            basket.setDat(dat);
-            basketRepository.save(basket);
+          return  basketRepository.searchBasketToClearDate(simpleDateFormat.parse(simpleDateFormat.format(dat)));
+        } catch (ParseException e) {
+            e.printStackTrace();
+          return null;
         }
-        productService.updateProductSallingSize(basketProductDto.getProductId(),basketProductDto.getSize(),true);
-
-        BasketProduct basketProduct = new BasketProduct(
-                basketProductDto.getProductId(),
-                basketProductDto.getSize(),
-                basketProductDto.getPrice(),
-                basketProductDto.getImg(),
-                basketProductDto.getInfo(),
-                dat,
-                basket
-        );
-
-        basketProductService.saveBasketProduct(basketProduct);
     }
 
 
-    public Basket getBasketToId(Long id){
-        return basketRepository.getById(id);
+     Basket getBasketToId(Long id){
+        try{
+            if(basketRepository.foundBasketId(id)){
+                return   basketRepository.getById(id);
+            }else{
+                return null;
+            }
+        }catch(Exception ex){
+            return null;
+        }
     }
 
 
     public List<BasketProductDto> getBasketDtoListToToken(String token){
-        Basket basket = getBasketToToken(token);
-        return getBasketProductDtoList(basket);
+
+        if(token.length()==Constants.LENGHT_TOKEN){
+
+            Basket basket = getBasketToToken(token);
+
+            return getBasketProductDtoList(basket);
+        }
+        return null;
     }
 
 
-    private List<BasketProductDto> getBasketProductDtoList(Basket basket) {
-        List<BasketProductDto>basketDtoList=new ArrayList<>();
+    public void deleteBasketById(Long id){
 
-        for(BasketProduct basketProduct:basket.getBasketProducts()){
+        Basket basket = basketRepository.getById(id);
 
-            BasketProductDto basketProductDto = getBasketProductDto(basket, basketProduct);
-            basketDtoList.add(basketProductDto);
+        basketDelete(basket);
+    }
+
+
+    void basketDelete(Basket basket){
+
+        for(BasketProduct basketProduct : basket.getBasketProducts()){
+
+            basketProductService.deleteBasketProduct(basketProduct.getId());
         }
-        return basketDtoList;
+        basketRepository.delete(basket);
+    }
+
+    public void deleteRancidCookies(){
+        Date dat = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd" );// HH:mm:ss
+        try {
+
+            List<Basket> basketList = basketRepository.searchBasketToClearDate(simpleDateFormat.parse(simpleDateFormat.format(dat)));
+
+            if(basketList!=null){
+                for(Basket basket:basketList){
+                    basketDelete(basket);
+                }
+            }
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<BasketProductDto> getBasketProductDtoList(Basket basket) {
+
+        if(basket!=null) {
+
+            List<BasketProductDto> basketDtoList = new ArrayList<>();
+
+            for (BasketProduct basketProduct : basket.getBasketProducts()) {
+
+                BasketProductDto basketProductDto = getBasketProductDto(basket, basketProduct);
+
+                basketDtoList.add(basketProductDto);
+            }
+            return basketDtoList;
+        }
+        return null;
     }
 
 
     private BasketProductDto getBasketProductDto(Basket basket, BasketProduct basketProduct) {
+
         return new BasketProductDto(
                 basketProduct.getId(),
                 basketProduct.getProductId(),
@@ -121,9 +176,23 @@ public class BasketService {
 
     public List<BasketProductDto> deleteBasketProductInBasket(Long id,String token){
 
-        basketProductService.deleteBasketProduct(id);
+    int countProductToBasket = getBasketDtoListToToken(token).size();
 
-        return getBasketDtoListToToken(token);
+        if(countProductToBasket>1){
+
+            basketProductService.deleteBasketProduct(id);
+
+            return getBasketDtoListToToken(token);
+        }else{
+
+            basketProductService.deleteBasketProduct(id);
+
+            Basket basket = basketRepository.searchBasketToToken(token);
+
+            basketRepository.delete(basket);
+
+            return null;
+        }
     }
 
 
@@ -138,6 +207,17 @@ public class BasketService {
     }
 
 
+    public Long getBasketProductIdToToken(String token){
+
+        Basket basket=basketRepository.searchBasketToToken(token);
+
+        if(basket!=null){
+            return basket.getId();
+        }
+        return -1L;
+    }
+
+
     private BasketDto getBasketToBasketDto(Basket basket){
 
         return new BasketDto(
@@ -146,7 +226,8 @@ public class BasketService {
                 basket.getPhone(),
                 basket.getInfo(),
                 basket.getToken(),
-                basket.getDat().toString()
+                basket.getDat().toString(),
+                basket.getDat_clear().toString()
         );
 
     }

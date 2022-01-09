@@ -11,6 +11,7 @@ import com.vognev.textilewebproject.model.Product;
 import com.vognev.textilewebproject.model.dto.ProductDto;
 import com.vognev.textilewebproject.model.util.MyCookies;
 import com.vognev.textilewebproject.repository.ProductRepository;
+import com.vognev.textilewebproject.service.BasketService;
 import com.vognev.textilewebproject.service.ProductService;
 import com.vognev.textilewebproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.File;
@@ -44,12 +46,15 @@ public class MainController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private BasketService basketService;
+
     @Value("${upload.path}")
     private String uploadPath;
 
 
     @GetMapping("/")
-    public String greeting(Model model,HttpServletRequest request) {
+    public String greeting(@CookieValue(value = "textile-basket", required = false) String cookieValue,  Model model) {
 
         List<Product> productList = productService.findAll();
 
@@ -57,12 +62,19 @@ public class MainController {
         model.addAttribute("col_product",productService.colProduct());
         model.addAttribute("sumPurchace",productService.warehouseDto());
         model.addAttribute("col_user",userService.colUsers());
-
-        String cookieValue=MyCookies.getMyCookies(request);
-        System.out.println();
+        System.out.println(cookieValue);
+        basketService.deleteRancidCookies();
+//        String cookieValue=MyCookies.getMyCookies(request);
+//       ;HttpServlet serv,
         if(cookieValue!=null&&!cookieValue.isEmpty()){
+            //System.out.println(serv.getServletInfo());
 
+        Long basketId=basketService.getBasketProductIdToToken(cookieValue);
+        if(basketId>0){
             model.addAttribute("cookie",cookieValue);
+            model.addAttribute("basketId",basketId);
+        }
+
         }
         return "index";
     }

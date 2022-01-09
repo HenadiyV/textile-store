@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
+//@Transactional
 public class Basket {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -21,19 +22,30 @@ public class Basket {
     private String phone;
     private String info;
     private Date dat;
+    private Date dat_clear;
     @OneToMany(mappedBy = "basket",fetch = FetchType.LAZY,cascade = CascadeType.ALL)//
     private List<BasketProduct> basketProducts;
 
     public Basket() {
     }
 
-    public Basket(Long id, String token, String username, String phone, String info, Date dat, List<BasketProduct> basketProducts) {
+    public Basket(String token, String username, String phone, String info, Date dat, Date dat_clear) {
+        this.token = token;
+        this.username = username;
+        this.phone = phone;
+        this.info = info;
+        this.dat = dat;
+        this.dat_clear = dat_clear;
+    }
+
+    public Basket(Long id, String token, String username, String phone, String info, Date dat, Date dat_clear, List<BasketProduct> basketProducts) {
         this.id = id;
         this.token = token;
         this.username = username;
         this.phone = phone;
         this.info = info;
         this.dat = dat;
+        this.dat_clear = dat_clear;
         this.basketProducts = basketProducts;
     }
 
@@ -83,6 +95,14 @@ public class Basket {
 
     public void setDat(Date dat) {
         this.dat = dat;
+    }
+
+    public Date getDat_clear() {
+        return dat_clear;
+    }
+
+    public void setDat_clear(Date dat_clear) {
+        this.dat_clear = dat_clear;
     }
 
     public List<BasketProduct> getBasketProducts() {

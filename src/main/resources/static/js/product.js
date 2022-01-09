@@ -244,7 +244,7 @@ function writeCookies() {
 
         }while(tokenTrue);
 
-        setCookie('textile-basket', token,3);
+        setCookie('textile-basket', token,1);
 
     } else {
        token = resCookie;
@@ -266,7 +266,8 @@ function showBasket() {
 
 
 function dataReturnFetchBasket(data1) {
-
+    console.log(data1.length);
+if(data1!=null&&data1!=''){
     let data = JSON.parse(data1);
 
     table_place.innerHTML = '';
@@ -276,7 +277,7 @@ function dataReturnFetchBasket(data1) {
     for (let i = 0; i < data.length; i++) {
 
         let summ = data[i].price * data[i].size;
-
+console.log("dataReturnFetchBasket = "+data[i].id);
         let dv = `
             <div class="col-sm-6" style="border:1px solid silver">
              <div class="table-content-center">
@@ -307,6 +308,10 @@ function dataReturnFetchBasket(data1) {
         token_ordering.value=getCookie('textile-basket');
     }
     myModalBasket.style.display = "block";
+}else{
+    location.reload();
+}
+    //
 }
 
 
@@ -314,7 +319,7 @@ function deleteBasketProduct(basketProductId) {
 
     let resCookie = getCookie('textile-basket');
 
-    let url = "/rest/delet-basket-pordut/" + resCookie + "/" + basketProductId;
+    let url = "/rest/delete-basket-product/" + resCookie + "/" + basketProductId;
 
     myFetchFunction(url, null, "Get", '', 'basket');
 }
