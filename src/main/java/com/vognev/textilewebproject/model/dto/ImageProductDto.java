@@ -13,7 +13,12 @@ public class ImageProductDto {
     public ImageProductDto() {
     }
 
-    public ImageProductDto(Long id, Long product_id, String imgProduct, boolean showcase, String info) {
+    public ImageProductDto(Long id,
+                           Long product_id,
+                           String imgProduct,
+                           boolean showcase,
+                           String info
+    ) {
         this.id = id;
         this.product_id = product_id;
         this.imgProduct = imgProduct;

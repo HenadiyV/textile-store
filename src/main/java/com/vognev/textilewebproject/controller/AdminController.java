@@ -50,7 +50,6 @@ public class AdminController {
     public String adminPage(Model model){
 
         model.addAttribute("col_product",productService.colProduct());
-        model.addAttribute("sumPurchace",productService.warehouseDto());
         model.addAttribute("col_user",userService.colUsers());
 
         return "admin";
@@ -88,7 +87,7 @@ public class AdminController {
 
     @PostMapping("/add-user")
     public String addUser(
-            @Valid MyUser user,//UserDto
+            @Valid MyUser user,
             @RequestParam(name="info", required=false,defaultValue = " ")String info,
             @RequestParam(name="phone", required=false,defaultValue = " ")String phone,
             @RequestParam(name="city", required=false,defaultValue = " ")String city,
@@ -98,6 +97,7 @@ public class AdminController {
             Model model
     ){
         Map<String,String> errorM= userService.addUserFromAdmin(user,info,phone,city,address,postCode,postOffice);
+
         if(errorM.size()==0) {
             model.addAttribute("user", null);
         }else{
@@ -118,7 +118,9 @@ public class AdminController {
 
     @GetMapping("/users")
     public String allUser(Model model){
+
         model.addAttribute("users", userService.findAll());
+
         return "admin-user";
     }
 
@@ -130,6 +132,7 @@ public class AdminController {
     ){
         model.addAttribute("userUp", user);
         model.addAttribute("users", userService.findAll());
+
         return "admin-user";
     }
 
@@ -146,6 +149,7 @@ public class AdminController {
             Model model
     ){
          Map<String,String> err=  userService.updateMyUser(user,username, name, email,rating,info, active);
+
         if(err.size()==0) {
             model.addAttribute("user", null);
             model.addAttribute("name", null);
@@ -172,23 +176,27 @@ public class AdminController {
 
     @PostMapping("add-phone")
     public String addPhone(Model model){
+
         model.addAttribute("users", userService.findAll());
+
         return "admin-user";
     }
 
 
     @PostMapping("add-post-office")
     public String addPostOffice(Model model){
+
         model.addAttribute("users", userService.findAll());
+
         return "admin-user";
     }
 
 
     @PostMapping("add-address")
     public String addAddress(Model model){
+
         model.addAttribute("users", userService.findAll());
+
         return "admin-user";
     }
-
-
 }

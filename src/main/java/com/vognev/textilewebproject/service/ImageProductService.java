@@ -12,6 +12,7 @@ import java.util.List;
  */
 @Service
 public class ImageProductService {
+
     @Autowired
     private ImageProductRepository imageProductRepository;
 
@@ -44,12 +45,20 @@ public class ImageProductService {
 
     }
 
+
     String getImageFileName(Long id){
+
         ImageProduct imageProduct= imageProductRepository.productByImage(id);
+
         if(imageProduct!=null){
+
        return  imageProduct.getImgProduct();
         }
         return " ";
     }
 
+
+    ImageProduct productByImage(Long id) {
+        return imageProductRepository.productByImage(id);
+    }
 }

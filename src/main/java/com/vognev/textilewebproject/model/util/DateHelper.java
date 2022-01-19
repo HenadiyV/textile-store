@@ -8,6 +8,7 @@ import java.util.Date;
  * textilewebproject_2  22/10/2021-20:46
  */
 public abstract class DateHelper {
+
     public static Date convertStringToDate(String dat){
 
         SimpleDateFormat format = new SimpleDateFormat("dd.MM.yyyy");

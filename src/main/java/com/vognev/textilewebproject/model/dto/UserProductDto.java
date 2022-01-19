@@ -33,9 +33,24 @@ public class UserProductDto {
     private Double bonus;
     private Set<ImageProduct> imageProducts;
 
-    public UserProductDto(Long id, String name, String username, String phone, String address, String postOffice,Long cartId, String category,
-                          Long productId, String nameProduct, String color, double sizeProduct, double purchasePrice,
-                          double sellingPrice, String description, Date dat, Double selling_size, String info
+    public UserProductDto(Long id,
+                          String name,
+                          String username,
+                          String phone,
+                          String address,
+                          String postOffice,
+                          Long cartId,
+                          String category,
+                          Long productId,
+                          String nameProduct,
+                          String color,
+                          double sizeProduct,
+                          double purchasePrice,
+                          double sellingPrice,
+                          String description,
+                          Date dat,
+                          Double selling_size,
+                          String info
                           ) {
         this.id = id;
         this.name = name;

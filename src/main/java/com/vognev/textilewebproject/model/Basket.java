@@ -23,22 +23,24 @@ public class Basket {
     private String info;
     private Date dat;
     private Date dat_clear;
+    private Long userId;
     @OneToMany(mappedBy = "basket",fetch = FetchType.LAZY,cascade = CascadeType.ALL)//
     private List<BasketProduct> basketProducts;
 
     public Basket() {
     }
 
-    public Basket(String token, String username, String phone, String info, Date dat, Date dat_clear) {
+    public Basket(String token, String username, String phone, String info, Date dat, Date dat_clear,Long userId) {
         this.token = token;
         this.username = username;
         this.phone = phone;
         this.info = info;
         this.dat = dat;
         this.dat_clear = dat_clear;
+        this.userId=userId;
     }
 
-    public Basket(Long id, String token, String username, String phone, String info, Date dat, Date dat_clear, List<BasketProduct> basketProducts) {
+    public Basket(Long id, String token, String username, String phone, String info, Date dat, Date dat_clear,Long userId, List<BasketProduct> basketProducts) {
         this.id = id;
         this.token = token;
         this.username = username;
@@ -46,6 +48,7 @@ public class Basket {
         this.info = info;
         this.dat = dat;
         this.dat_clear = dat_clear;
+        this.userId=userId;
         this.basketProducts = basketProducts;
     }
 
@@ -111,5 +114,13 @@ public class Basket {
 
     public void setBasketProducts(List<BasketProduct> basketProducts) {
         this.basketProducts = basketProducts;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

@@ -6,6 +6,7 @@ create table basket(
   info varchar(1024) DEFAULT '',
   dat date,
   dat_clear date,
+  user_id bigint,
     primary key (id)
 );
 

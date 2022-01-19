@@ -36,9 +36,9 @@ public class Cart {
     public Cart() {
     }
 
-    public Cart(Long id, Long product_id, double salePrice, String nameProduct, double siz, double discount_price,
+    public Cart(Long product_id, double salePrice, String nameProduct, double siz, double discount_price,
                 String info, Date dat, Order order) {
-        this.id = id;
+
         this.product_id = product_id;
         this.salePrice = salePrice;
         this.nameProduct = nameProduct;
@@ -120,5 +120,7 @@ public class Cart {
     public void setDat(Date dat) {
         this.dat = dat;
     }
+
+
 
 }

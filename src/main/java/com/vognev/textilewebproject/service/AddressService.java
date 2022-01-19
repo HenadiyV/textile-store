@@ -7,19 +7,32 @@ import com.vognev.textilewebproject.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.zip.ZipFile;
 
 /**
  * textilewebproject_2  23/10/2021-6:55
  */
 @Service
 public class AddressService {
+
     @Autowired
     private AddressRepository addressRepository;
 
 
     AddressUser getAddressById(Long id){
         return addressRepository.getById(id);
+    }
+
+
+   public AddressUserDto getAddressUserDtoByAddressUser(AddressUser addressUser){
+
+        return new AddressUserDto(addressUser.getId(),
+                addressUser.getCity(),
+                addressUser.getAddress(),
+                addressUser.getPostCode(),
+                addressUser.isActive());
     }
 
 
@@ -30,7 +43,8 @@ public class AddressService {
         addressUser.setPostCode(postCode);
         addressUser.setAddressUser(newUser);
         addressUser.setInfo(" ");
-        addressRepository.save(addressUser);
+
+        save(addressUser);
     }
 
 
@@ -43,7 +57,7 @@ public class AddressService {
             addressUser.setPostCode(addressUserDto.getPostCode());
             addressUser.setInfo(addressUserDto.getInfo());
 
-            addressRepository.save(addressUser);
+            save(addressUser);
             return true;
         }catch(Exception ex){
             ex.printStackTrace();
@@ -52,13 +66,47 @@ public class AddressService {
     }
 
 
-    void saveBasketAdddress(MyUser myUser){
+    AddressUser saveBasketAdddress(MyUser myUser){
         try{
-            AddressUser addressUser = new AddressUser();
+            AddressUser addressUser = new AddressUser("city","address","postCode"," ",true,myUser);
 
-            addressRepository.save(addressUser);
+         return save(addressUser);
         }catch(Exception ex){
             ex.printStackTrace();
+
         }
+        return null;
+    }
+
+
+    public List<AddressUser> findAll() {
+        return addressRepository.findAll();
+    }
+
+
+    public AddressUser save(AddressUser address) {
+        return addressRepository.save(address);
+    }
+
+
+    public List<AddressUser> getAddressByUserId(Long userId) {
+        return addressRepository.getAddressUserListByUserId(userId);
+    }
+
+
+    public List<AddressUser> getAll() {
+
+        return addressRepository.findAll();
+    }
+
+
+    public void addAddressFromUser(String city, String address, String postCode, String info, boolean active, MyUser user) {
+        System.out.println(city);
+        System.out.println(address);
+        System.out.println(postCode);
+        System.out.println(info);
+        System.out.println(active);
+        System.out.println(user.getId());
+        System.out.println(user.getName());
     }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vognev.textilewebproject.model.*;
 import com.vognev.textilewebproject.model.dto.*;
+import com.vognev.textilewebproject.model.util.Constants;
 import com.vognev.textilewebproject.model.util.OrderSumm;
 import com.vognev.textilewebproject.repository.OrderDeletedRepository;
 import com.vognev.textilewebproject.repository.OrderRepository;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.zip.ZipFile;
 
 /**
  * textilewebproject_2  16/10/2021-20:05
@@ -87,6 +90,46 @@ public class OrderService {
     }
 
 
+    public List<OrderDto> orderAllToUser(Long userId) {
+
+        Iterable<Order> orders = orderRepository.findAllByUser_Id(userId);
+
+        List<OrderDto> orderDtos = new ArrayList<>();
+
+        for (Order order : orders) {
+
+            double summ=0;
+
+            List<CartDto> cartDtos = cartService.getCartDtoListFromOrder(order.getId(),order.getCarts());
+
+            orderDtos.add(
+                    new OrderDto(
+                            order.getId(),
+                            order.getDat_dispatch(),
+                            order.getStatus(),
+                            order.getDelivery(),
+                            order.getInfo(),
+                            order.getDat_create(),
+                            cartDtos,
+                            OrderSumm.getOrderSumm(),
+                            order.getUser().getId(),
+                            order.getUser().getUsername(),
+                            order.getUser().getName(),
+                            order.getPhoneUser().getId(),
+                            order.getPhoneUser().getPhone(),
+                            order.getAddressUser().getId(),
+                            order.getAddressUser().getAddress(),
+                            order.getAddressUser().getCity(),
+                            order.getAddressUser().getPostCode(),
+                            order.getPostOfficeUser().getId(),
+                            order.getPostOfficeUser().getPostOffice())
+            );
+            OrderSumm.setOrderSumm(0);
+        }
+        return orderDtos;
+    }
+
+
     public Order createOrder(Date dat_dispatch,
                              String status,
                              String delivery,
@@ -110,7 +153,7 @@ public class OrderService {
                     phoneService.getPhoneById(phoneId),
                     prostOfficeService.getPostOfficeById(postOfficeId));
 
-            return orderRepository.save(order);
+            return save(order);
 
         }catch(Exception ex){
             System.out.println("createOrderErr");
@@ -120,9 +163,9 @@ public class OrderService {
     }
 
 
-    public void save(Order order) {
+    public Order save(Order order) {
 
-        orderRepository.save(order);
+      return  orderRepository.save(order);
     }
 
 
@@ -151,41 +194,49 @@ public class OrderService {
     }
 
 
-    public Order getOrderById(Long id){
-        return orderRepository.getById(id);
+    Order getOrderById(Long id){
+        return getById(id);
     }
 
 
     public OrderDto getOrderByIdFromOrderDto(Long id){
 
-        Order order=orderRepository.getById(id);
+        Order order = getById(id);
 
-        List<CartDto> cartDtos = cartService.getCartDtoListFromOrder(order.getId(),order.getCarts());
+        if(order!=null){
+            List<CartDto> cartDtos = cartService.getCartDtoListFromOrder(order.getId(),order.getCarts());
 
-        OrderDto orderDto=new OrderDto(
-                order.getId(),
-                order.getDat_dispatch(),
-                order.getStatus(),
-                order.getDelivery(),
-                order.getInfo(),
-                order.getDat_create(),
-                cartDtos,
-                OrderSumm.getOrderSumm(),
-                order.getUser().getId(),
-                order.getUser().getUsername(),
-                order.getUser().getName(),
-                order.getPhoneUser().getId(),
-                order.getPhoneUser().getPhone(),
-                order.getAddressUser().getId(),
-                order.getAddressUser().getAddress(),
-                order.getAddressUser().getCity(),
-                order.getAddressUser().getPostCode(),
-                order.getPostOfficeUser().getId(),
-                order.getPostOfficeUser().getPostOffice());
+            OrderDto orderDto=new OrderDto(
+                    order.getId(),
+                    order.getDat_dispatch(),
+                    order.getStatus(),
+                    order.getDelivery(),
+                    order.getInfo(),
+                    order.getDat_create(),
+                    cartDtos,
+                    OrderSumm.getOrderSumm(),
+                    order.getUser().getId(),
+                    order.getUser().getUsername(),
+                    order.getUser().getName(),
+                    order.getPhoneUser().getId(),
+                    order.getPhoneUser().getPhone(),
+                    order.getAddressUser().getId(),
+                    order.getAddressUser().getAddress(),
+                    order.getAddressUser().getCity(),
+                    order.getAddressUser().getPostCode(),
+                    order.getPostOfficeUser().getId(),
+                    order.getPostOfficeUser().getPostOffice());
 
-        OrderSumm.setOrderSumm(0);
+            OrderSumm.setOrderSumm(0);
 
-        return orderDto;
+            return orderDto;
+        }
+        return null;
+    }
+
+    private Order getById(Long id) {
+        Optional<Order> orderOpt=orderRepository.findById(id);
+        return orderOpt.orElse(null);
     }
 
 
@@ -215,7 +266,7 @@ public class OrderService {
             cr.setDat(dt);
             cr.setOrder(ord);
 
-            cartService.saveCart(cr);
+            cartService.save(cr);
         }
     }
 
@@ -247,7 +298,10 @@ public class OrderService {
     // удаление заказа
     public void deleteOrder(Long id){
 
-        Order order = orderRepository.getById(id);
+        Order order = getById(id);
+
+        if(order!=null){
+
 
         Date dat_delete= new Date();
 
@@ -282,19 +336,17 @@ public class OrderService {
         orderDeletedRepository.save(orderDeleted);
 
         orderRepository.delete(order);
+        }
     }
 
 
-    Order saveOrderBasket(MyUser myUser, String info){
+    Order saveOrderBasket(MyUser myUser,AddressUser addressUser,PhoneUser phoneUser,PostOfficeUser postOfficeUser, String info){
         try{
             Date today=new Date();
-            long ltime=today.getTime()+3*24*60*60*1000;
+            long ltime=today.getTime()+3*Constants.ONE_DAY;
             Date today3=new Date(ltime);
 
-            AddressUser addressUser = (AddressUser)myUser.getAddresses().stream().findFirst().get();
-            PhoneUser phoneUser = (PhoneUser)myUser.getPhones().stream().findFirst().get();
-            PostOfficeUser postOffice = (PostOfficeUser)myUser.getPostOfficeUsers().stream().findFirst().get();
-            return new Order(null,
+            Order order = new Order(null,
                     today3,
                     "не оплачений",
                     " ",
@@ -303,12 +355,61 @@ public class OrderService {
                     myUser,
                     addressUser,
                     phoneUser,
-                    postOffice);
+                    postOfficeUser);
+            return orderRepository.save(order);
 
         }catch(Exception ex){
-            System.out.println("Error-SaveOrderBasket 3003");
+            System.out.println("Error-SaveOrderBasket 355");
             ex.printStackTrace();
             return null;
         }
+    }
+
+    public List<Order> findAll() {
+        return orderRepository.findAll();
+    }
+
+     AddressUser getAdressUser(MyUser user){
+
+         for(AddressUser addressUser : user.getAddresses()){
+
+            if(addressUser!=null){
+
+                return addressUser;
+            }
+         }
+         return null;
+     }
+
+
+     PhoneUser getPhoneUser(MyUser user){
+
+         for(PhoneUser phone : user.getPhones()){
+
+            if(phone!=null){
+
+                return phone;
+            }
+         }
+         return null;
+     }
+
+
+     PostOfficeUser getPostOfficeUser(MyUser user){
+
+         for(PostOfficeUser postOffice : user.getPostOfficeUsers()){
+
+            if(postOffice!=null){
+
+                return postOffice;
+            }
+         }
+         return null;
+     }
+
+
+    List<Order> getListOrderByUserId(long userId) {
+
+        return orderRepository.findAllByUser_Id(userId);
     }
 }

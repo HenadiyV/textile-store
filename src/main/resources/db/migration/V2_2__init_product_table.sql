@@ -69,6 +69,7 @@ values (1, 1,1,'Name',110,30,0,'2021-04-11','info cart'),
   (3, 1,3,'Name_3',60,10,0,'2021-04-11','info cart'),
   (4, 2,3,'Name_3',60,10,0,'2021-04-14','info cart'),
   (5, 2,4,'Name_4',100,10,0,'2021-04-14','info cart');
+
 # insert into orders (id,user_id,address_id,phone_id,post_office_id,summ,dat_dispatch,status,delivery,info_order,dat_create)
 # values (1, 2,2,3,2,5100,'2021-04-13','на відправку','ТТН','info','2021-04-11'),
 #        (2, 3 ,3,4,3,1700,'2021-04-20','на відправку','ТТН','info','2021-04-14');

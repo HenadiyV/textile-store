@@ -2,9 +2,8 @@ const myModalOrdering = document.getElementById("myModalOrdering");
 const closeMyModalOrdering = document.getElementById("closeMyModalOrdering");
 const myModalBasket = document.getElementById("myModalBasket");
 const closeMyModalBasket = document.getElementById("closeMyModalBasket");
-//const order_csrf = document.getElementById("order_csrf");
-// const order_csrf = document.getElementById("order_csrf");
-// const basket_csrf = document.getElementById("basket_csrf");
+const myBasketUser = document.getElementById("myBasketUser");
+const closeMyBasketUser = document.getElementById("closeMyBasketUser");
 const imgView = document.getElementById('view-img');
 const img_product = document.getElementById('img_product');
 const token_cookie = document.getElementById('token_cookie');
@@ -22,6 +21,14 @@ const add_basket = document.getElementsByName('add-basket');
 const show_basket = document.querySelector("a[name='show-basket']");
 const write_token = document.getElementById("write_token");
 const add_to_basket = document.getElementById("add_to_basket");
+
+const b_user = document.getElementById("b_user");
+const b_phone = document.getElementById("b_phone");
+const b_address = document.getElementById("b_address");
+const b_postOffice = document.getElementById("b_postOffice");
+const b_info = document.getElementById("b_info");
+const b_token = document.getElementById("b_token_ordering");
+
 let imageName = '';
 
 
@@ -78,7 +85,16 @@ window.addEventListener("click",function (event) {
 
         if (event.target === myModalBasket) {
 
+            basketProductSizeSave(basketProductMap);
+
             myModalBasket.style.display = "none";
+        }
+    }
+    if (myBasketUser) {
+
+        if (event.target === myBasketUser) {
+
+            myBasketUser.style.display = "none";
         }
     }
 });
@@ -124,10 +140,20 @@ if (closeMyModalBasket) {
 
     closeMyModalBasket.onclick = function () {
 
+        basketProductSizeSave(basketProductMap);
+
         myModalBasket.style.display = "none";
     };
 }
 
+
+if (closeMyBasketUser) {
+
+    closeMyBasketUser.onclick = function () {
+
+        myBasketUser.style.display = "none";
+    };
+}
 
 
 function myFetchFunction(url, data, method, csrf, place) {
@@ -169,7 +195,10 @@ function viewDataReturnFetchOrdering(data1, place1) {
 
         case "basket": dataReturnFetchBasket(data1); break;
 
-        case "search-token":dataReturnFetchBasketToToken(data1); break;
+        case "search-token": dataReturnFetchBasketToToken(data1); break;
+
+        case "user": dataReturnFetchUserById(data1); break;
+
     }
 }
 
@@ -195,7 +224,6 @@ function dataReturnFetchProductOrdering(data1) {
 
         img_product.value=data.img;
     }
-
     imageName = data.img;
 
     place_price.textContent = "Ціна : " + data.sellingPrice;
@@ -204,7 +232,7 @@ function dataReturnFetchProductOrdering(data1) {
 
     inpSize.max = data.product_balance;
 
-    myModalOrdering.style.display = "block";
+    myModalOrdering.style.display = "block" ;
 }
 
 
@@ -213,7 +241,6 @@ function searchProduct(productId) {
     let url = "/rest/product/" + productId;
 
     myFetchFunction(url, null, "Get", '', 'ordering_product');
-
 }
 
 
@@ -265,20 +292,68 @@ function showBasket() {
 }
 
 
-function dataReturnFetchBasket(data1) {
-    console.log(data1.length);
-if(data1!=null&&data1!=''){
+function dataReturnFetchUserById(data1){
+
     let data = JSON.parse(data1);
 
-    table_place.innerHTML = '';
+    if(b_user){
+        b_user.value=data.id;
+    }
+    if(b_phone){
 
-    let div = [];
+        let phoneOpt="";
 
-    for (let i = 0; i < data.length; i++) {
+        for(phon of data.phoneList){
 
-        let summ = data[i].price * data[i].size;
-console.log("dataReturnFetchBasket = "+data[i].id);
-        let dv = `
+            phoneOpt+="<option value="+phon.id+">"+phon.phone+"</option>";
+        }
+        b_phone.innerHTML= phoneOpt;
+    }
+    if(b_address){
+
+        let addressOpt="";
+
+        for(address of data.addressList){
+
+            let adr=address.city+" | "+address.address+" | "+address.postCode;
+            addressOpt+="<option value="+address.id+">"+adr+"</option>";
+        }
+        b_address.innerHTML=addressOpt;
+    }
+    if(b_postOffice){
+
+        let postOfficeOpt="";
+
+        for(postOffice of data.postOfficeList){
+
+            postOfficeOpt+="<option value="+postOffice.id+">"+postOffice.postOffice+"</option>"
+    }
+        b_postOffice.innerHTML=postOfficeOpt;
+    }
+
+    if(b_token){
+
+        b_token.value=getCookie('textile-basket');
+    }
+    myBasketUser.style.display = "block";
+}
+
+
+function dataReturnFetchBasket(data1) {
+
+    if(data1!=null && data1!==''){
+
+        let data = JSON.parse(data1);
+
+        table_place.innerHTML = '';
+
+        let div = [];
+
+        for (let i = 0; i < data.length; i++) {
+
+            let summ = data[i].price * data[i].size;
+
+            let dv = `
             <div class="col-sm-6" style="border:1px solid silver">
              <div class="table-content-center">
                  <div class="row">
@@ -291,7 +366,20 @@ console.log("dataReturnFetchBasket = "+data[i].id);
                         </div>
                         <div class="col-sm-6 col-md-6">
                             <span>Ціна : ${data[i].price}</span><br/>
-                            <span>Метраж : ${data[i].size}</span><br/>
+                            <label>Метраж : </label><br/>
+                            
+                 <div class="number">
+                    <button class="number-minus" type="button" onclick="this.nextElementSibling.stepDown(); 
+                    this.nextElementSibling.onchange;
+                    basketProductSizeEdit(${data[i].id},this.nextElementSibling.dataset.product,this.nextElementSibling.value)">-</button>
+                    
+                    <input type="number" min="0" step="0.1" data-product="${data[i].productId}" value="${data[i].size}" readonly />
+                    
+                    <button class="number-plus" type="button" onclick="this.previousElementSibling.stepUp(); 
+                    this.previousElementSibling.onchange;
+                    basketProductSizeEdit(${data[i].id},this.previousElementSibling.dataset.product,this.previousElementSibling.value)">+</button>
+                </div><br/>
+                           
                             <span>Сумма : ${summ}</span><br/>
                             <a class="btn btn-danger" onclick="deleteBasketProduct(${data[i].id})">Видалити</a>
                         </div>
@@ -299,19 +387,19 @@ console.log("dataReturnFetchBasket = "+data[i].id);
                 </div>
             </div>`;
 
-        div.push(dv);
-    }
-    table_place.innerHTML = div.join('');
+            div.push(dv);
+        }
+        table_place.innerHTML = div.join('');
 
-    if(token_ordering){
+        if(token_ordering){
 
-        token_ordering.value=getCookie('textile-basket');
+            token_ordering.value=getCookie('textile-basket');
+        }
+
+        test_user();
+    }else{
+        location.reload();
     }
-    myModalBasket.style.display = "block";
-}else{
-    location.reload();
-}
-    //
 }
 
 
@@ -356,409 +444,172 @@ function dataReturnFetchBasketToToken(data1) {
     tokenTrue = data1;
 }
 
+//=================CORECT SIZE PRODUCT==============
+let basketProductMap = new Map();
 
-function setCookie(cname, cvalue, exdays) {
+let basketProduct = new Array();
 
-    let d = new Date();
 
-    d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+function basketProductSizeEdit(id,productId,size){
 
-    let expires = "expires="+d.toUTCString();
-
-    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    basketProductMap.set(id,{productId,size});
 }
 
 
-function getCookie(cname) {
+function basketProductSizeSave(basketProductMap){
 
-    let name = cname + "=";
+    let inp_csrf='';
 
-    let ca = document.cookie.split(';');
+        document.querySelectorAll("input[name='_csrf'").forEach(el=>inp_csrf=el.value);
 
-    for(let i = 0; i < ca.length; i++) {
+    for (let v of basketProductMap.entries()) {
 
-        let c = ca[i];
+        let ob={"id":v[0],"productId":v[1].productId,"size":v[1].size};
 
-        while (c.charAt(0) === ' ') {
-
-            c = c.substring(1);
-        }
-        if (c.indexOf(name) === 0) {
-
-            return c.substring(name.length, c.length);
-        }
+        basketProduct.push(ob);
     }
-    return "";
-}
+    url="/rest/edit-selling-size";
+    let data=JSON.stringify(basketProduct);
+    let method="POST";
 
-
-function checkCookie(cookie_name) {
-
-    let cookie = getCookie(cookie_name);
-
-    if (cookie !== "") {
-
-      return true;
+    try {
+        const response = fetch(url,
+            {
+                method: method,
+                body: data,
+                headers: {
+                    'X-CSRF-TOKEN': inp_csrf,
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+        basketProduct.length = 0;
+    }catch(error){
+        console.error('Ошибка:', error);
     }
-    return false;
 }
+//=================END CORECT SIZE PRODUCT==============
+//=============Cookie============
+    function setCookie(cname, cvalue, exdays) {
+
+        let d = new Date();
+
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+
+        let expires = "expires="+d.toUTCString();
+
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
 
 
-function testRestSearchToken(token) {
+    function getCookie(cname) {
 
-    let url = "/rest/search-token/" + token;
+        let name = cname + "=";
 
-    myFetchFunction(url, null, "get", '', 'search-token');
-}
+        let ca = document.cookie.split(';');
 
+        for(let i = 0; i < ca.length; i++) {
+
+            let c = ca[i];
+
+            while (c.charAt(0) === ' ') {
+
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) === 0) {
+
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }
+
+
+    function checkCookie(cookie_name) {
+
+        let cookie = getCookie(cookie_name);
+
+        if (cookie !== "") {
+
+          return true;
+        }
+        return false;
+    }
+
+
+    function testRestSearchToken(token) {
+
+        let url = "/rest/search-token/" + token;
+
+        myFetchFunction(url, null, "get", '', 'search-token');
+    }
+//=============End Cookie============
 
 //====================productEdit ============
-let inpShowcase=document.querySelectorAll("input[name='showcase']");
-
-if(inpShowcase){
-
-    inpShowcase.forEach(el=>el.addEventListener('click',showcase));
-}
+    let inpShowcase=document.querySelectorAll("input[name='showcase']");
 
 
-function showcase(){
-    let sp='';
-    for(let i=0;i<inpShowcase.length;i++){
+    if(inpShowcase){
 
-        if(inpShowcase[i]!==this){
+        inpShowcase.forEach(el=>el.addEventListener('click',showcase));
+    }
 
-            inpShowcase[i].checked=false;
 
-            sp=inpShowcase[i].previousElementSibling.previousElementSibling;
+    function showcase(){
+        let sp='';
+        for(let i=0;i<inpShowcase.length;i++){
 
-            sp.innerText="Додаткове";
-        }else{
-            this.checked=true;
+            if(inpShowcase[i]!==this){
 
-            sp=this.previousElementSibling.previousElementSibling;
+                inpShowcase[i].checked=false;
 
-            sp.innerHTML="Вітрина";
+                sp=inpShowcase[i].previousElementSibling.previousElementSibling;
 
-            checkedShowcase(this.value)
+                sp.innerText="Додаткове";
+            }else{
+                this.checked=true;
+
+                sp=this.previousElementSibling.previousElementSibling;
+
+                sp.innerHTML="Вітрина";
+
+                checkedShowcase(this.value)
+            }
         }
     }
+
+
+    function checkedShowcase(id){
+
+        let productId=document.querySelector("#id_product").value;
+
+        let request = new XMLHttpRequest();
+
+        request.open("Get", "/rest/showcase-image/"+productId+"/"+id);
+
+        request.send();
+        // let status=request.status;
+        // if (status ===200){
+        //     console.log(status);
+        // }else{
+        //     console.log("error",status);
+        // }
+    }
+//====================End productEdit ============
+
+function test_user(){
+    if(document.getElementById("__user_id")){
+
+        let userId = document.getElementById("__user_id").value;
+
+        let url = "/rest/user/" + userId;
+
+        myFetchFunction(url, null, "Get", '', 'user');
+
+    }else{
+        console.log("not found __user_id");
+
+        myModalBasket.style.display = "block";
+    }
 }
-
-function checkedShowcase(id){
-
-    let productId=document.querySelector("#id_product").value;
-
-    let request = new XMLHttpRequest();
-
-    request.open("Get", "/rest/showcase-image/"+productId+"/"+id);
-
-    request.send();
-    // let status=request.status;
-    // if (status ===200){
-    //     console.log(status);
-    // }else{
-    //     console.log("error",status);
-    // }
-}
-
 //=========== product.js==============
-
-// // создание элементов
-// const element = (tag, classes = [], content, src, id) => {
-//
-//     const node = document.createElement(tag);
-//
-//     if (classes.length) {
-//
-//         node.classList.add(...classes);
-//     }
-//     if (content) {
-//
-//         node.textContent = content;
-//     }
-//     if (src) {
-//
-//         node.src = src;
-//     }
-//     if (id) {
-//
-//         node.id = id;
-//     }
-//     return node;
-// };
-//
-//
-// // создание формы
-// const createForm = (action, method, multipart) => {
-//
-//     const frm = document.createElement('form');
-//
-//     if (action) {
-//
-//         frm.action = action;
-//     }
-//     if (method) {
-//
-//         frm.method = method;
-//     }
-//     if (multipart) {
-//
-//         frm.enctype = multipart;
-//     }
-//     return frm;
-// };
-//
-//
-// function noop() {}
-
-
-// console.log('Готов!'+Cookies.get('foo'));
-//    if(order_csrf){
-//        console.log(order_csrf.value);
-//    }else{
-//        console.log("not order_csrf.value");
-//        location.reload();
-//    }
-// if(basket_csrf){
-//        console.log(basket_csrf.value);
-//    }else{
-//        console.log("not basket_csrf.value");
-//        location.reload();
-//    }
-
-// let cookies=document.cookie;
-// console.log(cookies);
-
-// let token = '';
-// if (data1 === null) {
-//     token = createToken(20);
-// } else {
-//     token = getCookie('foo');
-// }
-
-// if(show_basket){
-//     show_basket.style.display = 'none';
-// }
-
-
-// if(write_token){
-//     write_token.style.display = 'none';
-// }
-
-// let index_ordering_product = 0;
-// let productToBasketMap = new Map();
-
-// function saveBasket(){
-//     let url = "/rest/basket";
-//     let data = {
-//         username: username.value,
-//         phone: phone.value,
-//         info: info.value,
-//         token: writeCookies(),
-//     };
-//     username.value = '';
-//     phone.value = '';
-//     info.value = '';
-//
-//     myFetchFunction(url, JSON.stringify(data), "Post", order_csrf.value, '');
-//
-//     myModalOrdering.style.display = "none";
-// }
-
-
-
-// function saveProductToBasket(productId) {
-//     let url = "/rest/basket";
-//     let data = {
-//         productId: +productIdBasket.value,
-//         username: username.value,
-//         phone: phone.value,
-//         info: info.value,
-//         token: writeCookies(),
-//         size: inpSize.value,
-//         price: inpPrice.value,
-//         img: imageName
-//     };
-//     imageName = '';
-//     productIdBasket.value = '';
-//     username.value = '';
-//     phone.value = '';
-//     info.value = '';
-//     inpSize.value = '';
-//     inpPrice.value = '';
-//     myFetchFunction(url, JSON.stringify(data), "Post", order_csrf.value, '');
-//     myModalOrdering.style.display = "none";
-//     //Cookies.remove('foo');
-// }
-
-
-// function clearCookies() {
-//
-//     if (Cookies.get('foo')) {
-//
-//         Cookies.remove('foo');
-//     }
-// }
-
-/*
-dat: null
-img: "13_1.jpg"
-info: ""
-phone: null
-price: 60
-productId: 2
-size: 1
-token: "115b256a-15f4-4378-82d7-a9a059f606ff"
-username: null
-* */
-
-// if(addBasketProductModal){
-//
-//     if (event.target.className==="my_modal-table-cell") {
-//         console.log(event);
-//         //addBasketProductModal.style.display = "none";
-//         addBasketProductModal.classList.remove("my_modal-overlay_visible");
-//     }
-// }
-
-// console.log(data);
-//     let table=["<table><tr><th>Img</th><th>Price</th><th>Size</th><th>Summ</th></tr>"];
-//
-//     for(let i=0;i<data.length;i++){
-//         let summ=data[i].price*data[i].size;
-//         let tr=`<tr><td class="preview">
-// <div class="preview-image">
-// <img src=/img/${data[i].img} /></div></td>
-//                 <td>${data[i].price}</td><td>${data[i].size}</td>
-//                 <td>${summ}</td><td><a class="btn btn-danger" onclick="deleteBasketProduct(${data[i].id})">Видалити</a></td>
-//                 </tr>`;
-//         table.push(tr);
-//     }
-//     table.push("</table>");
-
-
-//function ordering(productId){
-//console.log(productId);
-// let inpProductId = element('input', [], '', '', 'productId');
-// inpProductId.type='hidden';
-// inpProductId.name='id';
-// inpProductId.value=productId;
-// const open = element('a', ['my-btn'], 'Відкрити', '', '');
-// el = createForm(act, 'post','multipart/form-data');
-
-
-// searchProduct(productId)
-//}
-//const frm=createForm("product-to-order","post");
-//product
-// ++index_ordering_product;
-//     productToBasketMap.set(index_ordering_product,{})
-//console.log(productIdBasket.value);
-//frm.innerHTML='';
-//  ++index_ordering_product;
-
-// console.log(place);
-//console.log(data1);
-// let newPalce1= document.getElementById(place);//"product_detail"
-// console.log(newPalce1);
-/*
-active: true
-bonus: 0
-category: null
-category_id: 1
-color: "Color_2"
-dat: "2021-04-11T21:00:00.000+00:00"
-description: "Name_Color_2"
-id: 2
-imageProducts: null
-info: ""
-metr: 0
-name: "Name_2"
-product_balance: 30
-purchasePrice: 0
-sellingPrice: 60
-selling_size: 50
-sizeProduct: 50*/
-
-
-//     const inpCSRF = element('input', [], '', '', '');//'img-view'
-//     inpCSRF.type = 'text';
-//     inpCSRF.name='_csrf';
-//     inpCSRF.value = order_csrf.value;//document.querySelector("input[name='tkn']").value;
-//
-//     const inpProductId = element('input', [], '', '', '');
-//     inpProductId.type='text';
-//     inpProductId.name='id';
-//     inpProductId.value=data.id;
-//     const spanSumm=element('span');
-//     const labelProductSize = element('label', ['mt-2'], 'Кількість: ', '', '');
-//
-//
-//     const inpProductSize = element('input', [], '', '', '');
-//     inpProductSize.type='number';
-//     inpProductSize.name='selling_size';
-//     inpProductSize.min=0;
-//     inpProductSize.max=data.product_balance;
-//     inpProductSize.addEventListener('change',function(){
-//         //console.log(this.value);
-//        /// console.log(this.max);
-//         if(+this.value>+this.max){
-//             this.value=this.max;
-//         }
-//
-//         spanSumm.textContent=inpProductSize.value*data.sellingPrice;
-//         //console.log(this.value);
-//     });
-//
-//
-//
-//     const spanProductName=element('span');//, [], '', '', ''
-//     spanProductName.textContent=data.name;
-//     //spanProductName.insertAdjacentHTML('beforebegin','<br/>');
-//     const buttonProduct=element('button',["btn","btn-primary","mt-2"]);
-//     buttonProduct.type="submit";
-//     buttonProduct.textContent="Save";
-//
-//     const myBr=element('br');
-//     const myBr1=element('br');
-//     const myBr2=element('br');
-//     const myBr3=element('br');
-//     const preview = element('div', ['preview','mt-2'], '');
-//
-//     // <div class = "preview-remove" data-name = "${data.img}"> &times; </div>
-//     //     <<div class = "preview-info">
-//     //     <span>${file.name}</span>
-//     //     ${bytesToSize(file.size)}
-//     // </div>
-// preview.insertAdjacentHTML('afterbegin',
-//         `<div class="preview-image">
-//                                         <img src="/img/${data.img}" alt="${data.img}"/>
-//                                 </div>`
-//     );
-//
-// //const imgDiv=element('div',["preview-image"]);
-// //const img=element('img');
-// //img.src=data.img;
-// //imgDiv.insertAdjacentHTML('afterbegin',img);
-//
-// //console.log(data);product-to-order/rest/product-order/
-//
-// frm.appendChild(spanProductName);
-// //frm.appendChild(myBr1);
-// frm.appendChild(spanSumm);
-// frm.appendChild(inpCSRF);
-// frm.appendChild(inpProductId);
-// frm.appendChild(myBr2);
-// frm.appendChild(labelProductSize);
-// frm.appendChild(inpProductSize);
-// frm.appendChild(myBr3);
-// frm.appendChild(preview);
-//
-// frm.appendChild(myBr);
-// frm.appendChild(buttonProduct);
-//
-// place.appendChild(frm);
-//   productToBasketMap.set(index_ordering_product,data);
-//   console.log(productToBasketMap);
-// createProductTableToOrder(productToCartMap,place);
-

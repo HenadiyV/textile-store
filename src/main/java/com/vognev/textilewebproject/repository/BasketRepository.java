@@ -18,10 +18,7 @@ public interface BasketRepository extends JpaRepository<Basket,Long> {
     @Query("from Basket bs where bs.token like :token")
     Basket searchBasketToToken(@Param("token")String token);
 
-    @Query("from Basket bs where bs.dat_clear =:dat1")
+    @Query("from Basket bs where bs.dat_clear =:dat1")//<=
     List<Basket> searchBasketToClearDate(@Param("dat1")Date dat1);
 
-
-    @Query("from Basket bs where bs.id =:id")
-    boolean foundBasketId(@Param("id")Long id);
 }

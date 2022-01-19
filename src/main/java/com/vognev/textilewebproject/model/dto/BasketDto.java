@@ -8,40 +8,56 @@ import java.util.List;
 public class BasketDto {
 
     private Long id;
-    private String username;
+    private String name;
     private String phone;
     private String info;
     private String token;
     private String dat;
     private String dat_clear;
+    private Long userId;
     private List<BasketProductDto> basketProductDtoList;
 
     public BasketDto() {
     }
 
-    public BasketDto(Long id,String username, String phone, String info, String token, String dat,String dat__clear) {
+    public BasketDto(Long id,
+                     String name,
+                     String phone,
+                     String info,
+                     String token,
+                     String dat,
+                     String dat_clear,
+                     Long userId
+    ) {
         this.id = id;
-        this.username = username;
+        this.name = name;
         this.phone = phone;
         this.info = info;
         this.token = token;
         this.dat = dat;
         this.dat_clear = dat_clear;
+        this.userId = userId;
     }
 
-    public BasketDto(String username, String phone, String info, String token) {
-        this.username = username;
+    public BasketDto(String name,
+                     String phone,
+                     String info,
+                     String token,
+                     Long userId
+    ) {
+        this.name = name;
         this.phone = phone;
         this.info = info;
         this.token = token;
+        this.userId = userId;
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getUsername() {
-        return username;
+    public String getName() {
+        return name;
     }
 
     public String getPhone() {
@@ -62,6 +78,10 @@ public class BasketDto {
 
     public String getDat_clear() {
         return dat_clear;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 
     public List<BasketProductDto> getBasketProductDtoList() {

@@ -20,8 +20,11 @@ public static void deleteCookie(HttpServletRequest request, HttpServletResponse 
         Cookie cookie = null;
 
         if(cookies !=null) {
+
             for(Cookie c: cookies) {
+
                 if(NAME_COOKIE.equals(c.getName())) {
+
                     c.setPath("/");
                     c.setValue("");
                     c.setMaxAge(0);
@@ -51,10 +54,14 @@ public static boolean setCookies(HttpServletResponse response,String name,String
 public static String getMyCookies(HttpServletRequest request){
     try{
         Cookie[] cookies = request.getCookies();
+
         String cookieName = "";
         Cookie cookie=null;
+
         if(cookies !=null) {
+
             for(Cookie c: cookies) {
+
                 if(NAME_COOKIE.equals(c.getName())) {
 
                     cookieName = c.getValue();
@@ -63,13 +70,13 @@ public static String getMyCookies(HttpServletRequest request){
                 }
             }
         }
-        System.out.println("getMyCookies  "+cookie.getMaxAge());
-        System.out.println("getMyCookies  "+cookie.getPath());
-        System.out.println("getMyCookies  "+cookie.getValue());
-        System.out.println("getMyCookies  "+cookie.getComment());
-        System.out.println("getMyCookies  "+cookie.getDomain());
-        System.out.println("getMyCookies  "+cookie.getSecure());
-        System.out.println("getMyCookies  "+cookie.getVersion());
+//        System.out.println("getMyCookies  "+cookie.getMaxAge());
+//        System.out.println("getMyCookies  "+cookie.getPath());
+//        System.out.println("getMyCookies  "+cookie.getValue());
+//        System.out.println("getMyCookies  "+cookie.getComment());
+//        System.out.println("getMyCookies  "+cookie.getDomain());
+//        System.out.println("getMyCookies  "+cookie.getSecure());
+//        System.out.println("getMyCookies  "+cookie.getVersion());
        return cookieName;
     }catch(Exception ex){
         System.out.println("not cookie");

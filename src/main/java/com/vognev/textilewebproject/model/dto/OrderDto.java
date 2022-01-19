@@ -34,10 +34,26 @@ public class OrderDto {
     private String postOffice;
 
 
-    public OrderDto(Long id, Date dat_dispatch, String status, String delivery, String info_order,
-                    Date dat_create, List<CartDto> carts, Double summ, Long user_id, String username,
-                    String name, Long phone_id, String phone, Long address_id, String address, String city,
-                    String postCode, Long postOffice_id, String postOffice) {
+    public OrderDto(Long id,
+                    Date dat_dispatch,
+                    String status,
+                    String delivery,
+                    String info_order,
+                    Date dat_create,
+                    List<CartDto> carts,
+                    Double summ,
+                    Long user_id,
+                    String username,
+                    String name,
+                    Long phone_id,
+                    String phone,
+                    Long address_id,
+                    String address,
+                    String city,
+                    String postCode,
+                    Long postOffice_id,
+                    String postOffice
+    ) {
         this.id = id;
         this.dat_dispatch = dat_dispatch;
         this.status = status;
@@ -59,8 +75,18 @@ public class OrderDto {
         this.postOffice = postOffice;
     }
 
-    public OrderDto(Long id, Date dat_dispatch, String status, String delivery, String info_order,
-                    Date dat_create, Double summ, Long user_id, Long phone_id, Long address_id, Long postOffice_id) {
+    public OrderDto(Long id,
+                    Date dat_dispatch,
+                    String status,
+                    String delivery,
+                    String info_order,
+                    Date dat_create,
+                    Double summ,
+                    Long user_id,
+                    Long phone_id,
+                    Long address_id,
+                    Long postOffice_id
+    ) {
         this.id = id;
         this.dat_dispatch = dat_dispatch;
         this.status = status;

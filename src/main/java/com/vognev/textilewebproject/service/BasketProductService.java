@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * textilewebproject_3  29/12/2021-19:41
@@ -42,13 +43,13 @@ public class BasketProductService {
     }
 
 
-   List<BasketProduct> getBasketProductList(Long basketId){
+    List<BasketProduct> getBasketProductList(Long basketId){
 
         return basketProductRepository.getBasketProductList(basketId);
     }
 
 
-    public BasketProduct getBasketPorductById(Long id){
+    private BasketProduct getBasketPorductById(Long id){
         try{
             return basketProductRepository.getById(id);
         }catch(Exception ex){
@@ -57,6 +58,7 @@ public class BasketProductService {
             return null;
         }
     }
+
 
     public void saveBasketProduct(BasketProductDto basketProductDto){
 
@@ -87,5 +89,47 @@ public class BasketProductService {
         );
 
         saveBasketProduct(basketProduct);
+    }
+
+
+    public List<BasketProduct> findAll() {
+        return basketProductRepository.findAll();
+    }
+
+
+    public BasketProduct save(BasketProduct basketProduct) {
+        return basketProductRepository.save(basketProduct);
+    }
+
+
+    public BasketProduct getById(long id) {
+
+        Optional<BasketProduct> basketProductOptional = basketProductRepository.findById(id);
+
+        return basketProductOptional.orElse(null);
+    }
+
+
+    public void delete(BasketProduct basketProduct) {
+        basketProductRepository.delete(basketProduct);
+    }
+
+
+    public void corectSizeSellingProduct(BasketProductDto[] basketProductDtos) {
+
+        for(BasketProductDto pr:basketProductDtos){
+
+            double sizeTemp= productService.getProductById(pr.getProductId()).getSelling_size();
+
+            productService.updateProductSallingSize(pr.getProductId(), sizeTemp, false);
+
+            productService.updateProductSallingSize(pr.getProductId(), pr.getSize(), true);
+
+            BasketProduct basketProduct = getBasketPorductById(pr.getId());
+            assert basketProduct != null;
+            basketProduct.setSize(pr.getSize());
+
+            save(basketProduct);
+        }
     }
 }

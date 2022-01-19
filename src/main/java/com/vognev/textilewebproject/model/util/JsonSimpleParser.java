@@ -21,20 +21,40 @@ public class JsonSimpleParser {
 
         try {
             JSONObject cartJsonObject= (JSONObject) parser.parse(s);
+
             Long  productId =(Long)cartJsonObject.get("productId");
+
             String productName = (String)cartJsonObject.get("productName");
+
             Long sellingPrice = (Long)cartJsonObject.get("sellingPrice");
+
             Long sizeProduct = (Long)cartJsonObject.get("sizeProduct");
+
             Long balance = (Long)cartJsonObject.get("balance");
+
             Long siz = (Long)cartJsonObject.get("siz");
+
             Long summ = (Long)cartJsonObject.get("summ");
+
             Long discountPrice = (Long)cartJsonObject.get("discountPrice");
+
             String infoCart = (String)cartJsonObject.get("infoCart");
 
-            return   new CartDto(null,null,productId,productName,sellingPrice.doubleValue(),
-                    sizeProduct.doubleValue(),balance.doubleValue(),siz.doubleValue(),summ.doubleValue(),discountPrice.doubleValue(),infoCart);
+            String img = (String)cartJsonObject.get("imgCart");
 
-
+            return   new CartDto(
+                    null,
+                    null,
+                    productId,
+                    productName,
+                    sellingPrice.doubleValue(),
+                    sizeProduct.doubleValue(),
+                    balance.doubleValue(),
+                    siz.doubleValue(),
+                    summ.doubleValue(),
+                    discountPrice.doubleValue(),
+                    infoCart,"n_img"
+            );
         } catch (ParseException e) {
             e.printStackTrace();
         }
@@ -77,7 +97,8 @@ public class JsonSimpleParser {
                             siz.doubleValue(),
                             summ.doubleValue(),
                             discountPrice.doubleValue(),
-                            infoCart
+                            infoCart,
+                            "n_img"
                     );
                     cartDtoList.add(cartDto);
 

@@ -11,6 +11,7 @@ import java.util.List;
  * textilewebproject_2  30/09/2021-14:06
  */
 public interface ImageProductRepository extends JpaRepository<ImageProduct , Long> {
+
     @Query("from ImageProduct img where img.imgProduct like :name")
     List<ImageProduct> getExistFileName(@Param("name")String name);
 

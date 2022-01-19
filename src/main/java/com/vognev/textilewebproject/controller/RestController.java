@@ -6,7 +6,12 @@ import com.vognev.textilewebproject.model.util.Constants;
 import com.vognev.textilewebproject.model.util.MyCookies;
 import com.vognev.textilewebproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +24,7 @@ import java.util.*;
 @org.springframework.web.bind.annotation.RestController
 @RequestMapping("rest")
 public class RestController {
+
     @Autowired
     private UserService userService;
 
@@ -47,14 +53,15 @@ public class RestController {
     private BasketProductService basketProductService;
 
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     @GetMapping("us/{id}")
     public MyUser getUserFromOrder(@PathVariable(name = "id") Long id){
         return userService.getUser(id);
     }
 
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+
+   @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     @GetMapping("user/{id}")
     public UserDto getUserOrder(@PathVariable(name = "id") Long id){
         return userService.getUserToOrder(id);
@@ -62,9 +69,9 @@ public class RestController {
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @RequestMapping(value="/us-search/{us}",method= RequestMethod.GET)
+    @GetMapping("/us-search/{us}")
     public List<UserDto> searchUser(
-            @PathVariable(name="us",required = false) String us
+            @PathVariable String us
     ){
         List<UserDto> userList=new ArrayList<>();
 
@@ -119,8 +126,9 @@ public class RestController {
 
 
      @GetMapping("/search-product/{name}")
-    public List<ProductDto> searchProductDtoList1(@PathVariable String name ){
-
+    public List<ProductDto> searchProductDtoList1(
+            @PathVariable String name
+            ){
         List<ProductDto> productDtoList=new ArrayList<>();
 
         if(!name.isEmpty()){
@@ -147,7 +155,7 @@ public class RestController {
 
     @GetMapping("/product/{id}")
     public ProductDto getProductDto(@PathVariable Long id ){
-        //System.out.println(id);
+
        return productService.getProductToOrderDto(id);
     }
 
@@ -184,9 +192,7 @@ public class RestController {
             result.put("id","phone"+ph.getId().toString());
             result.put("idMes","phoneErr"+ph.getId().toString());
             result.put("error","Номер існує");
-
         }else{
-
             result.put("phone","phone");
             result.put("id","phone"+ph.getId().toString());
             result.put("idMes","phoneErr"+ph.getId().toString());
@@ -208,9 +214,7 @@ public class RestController {
             result.put("id","postOffice"+po.getId().toString());
             result.put("idMes","postOfficeErr"+po.getId().toString());
             result.put("error","Помилка оновлення");
-
         }else{
-
             result.put("postOffice","postOffice");
             result.put("id","postOffice"+po.getId().toString());
             result.put("idMes","postOfficeErr"+po.getId().toString());
@@ -232,17 +236,16 @@ public class RestController {
             result.put("id","address"+addressUserDto.getId().toString());
             result.put("idMes","addressErr"+addressUserDto.getId().toString());
             result.put("error","Помилка оновлення");
-
         }else{
 
             result.put("address","address");
             result.put("id","address"+addressUserDto.getId().toString());
             result.put("idMes","addressErr"+addressUserDto.getId().toString());
             result.put("res","Адресу оновленно");
-
         }
         return result;
     }
+
 
     @GetMapping("/cart-view/{cart}")
     public CartDto orderCartView(@PathVariable Long cart){
@@ -259,14 +262,6 @@ public class RestController {
             @RequestBody BasketProductDto basketProductDto
 
     ){
-        System.out.println("addProductToBasket 262");
-        System.out.println(basketProductDto.getProductId());
-        System.out.println(basketProductDto.getSize());
-        System.out.println(basketProductDto.getInfo());
-        System.out.println(basketProductDto.getToken());
-        System.out.println(basketProductDto.getSize());
-        System.out.println(basketProductDto.getPrice());
-        System.out.println(basketProductDto.getImg());
         basketProductService.saveBasketProduct(basketProductDto);
 
     }
@@ -276,6 +271,7 @@ public class RestController {
     public List<BasketProductDto> getBasketProductList(@PathVariable String token){
 
     if(token.length()==Constants.LENGHT_TOKEN){
+
         return basketService.getBasketDtoListToToken(token);
      }
         return null;
@@ -290,9 +286,12 @@ public class RestController {
             HttpServletResponse response
     ){
         List<BasketProductDto> basketProductDtoList = basketService.deleteBasketProductInBasket(id,token);
+
         if(basketProductDtoList!=null){
+
             return basketProductDtoList;
         }else{
+
             MyCookies.deleteCookie(request, response);
         }
         return null;
@@ -304,9 +303,46 @@ public class RestController {
             @PathVariable String token
     ){
         BasketDto basketDto=basketService.getBasketDtoToToken(token);
+
         if(basketDto!=null){
             return false;
         }
         return true;
     }
+
+    @GetMapping("user-address/{id}")
+    public AddressUserDto getAddressUser(
+            @PathVariable(name="id")AddressUser addressUser
+    ){
+        return addressService.getAddressUserDtoByAddressUser(addressUser);
+    }
+
+
+    @GetMapping("user-update-phone/{id}")
+    public PhoneUserDto getPhoneUser(
+            @PathVariable(name="id")PhoneUser phoneUser
+    ){
+        return phoneService.getPhoneUserDtoByPhoneUser(phoneUser);
+    }
+
+
+    @GetMapping("user-postOffice/{id}")
+    public PostOfficeUserDto getPostOfficeUser(
+            @PathVariable(name="id")PostOfficeUser postOfficeUser
+    ){
+        return postOfficeService.getPoastOfficeUserDtoByPostOfficeUser(postOfficeUser) ;
+    }
+
+
+    @RequestMapping(value="/edit-selling-size", method= RequestMethod.POST ,
+            headers = "Accept=*/*",
+            produces = "application/json",
+            consumes="application/json"
+    )
+    public void corectSellingSize(
+            @RequestBody  BasketProductDto[] basketProductDtos
+    ){
+        basketProductService.corectSizeSellingProduct(basketProductDtos);
+    }
+
 }

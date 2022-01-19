@@ -34,7 +34,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-
                 .authorizeRequests()
                 .antMatchers("/","/zbir","/lito","/zima","/registration","/static/**","/activate/*",
                         "/img/*","/rest/**","/basket/**").permitAll()

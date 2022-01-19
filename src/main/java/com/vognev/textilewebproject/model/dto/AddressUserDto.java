@@ -16,10 +16,18 @@ public class AddressUserDto {
 
     private String info;
 
+    private boolean active;
+
     public AddressUserDto() {
     }
 
-    public AddressUserDto(String address, String city, Long id, String info, String postCode, Long userId) {
+    public AddressUserDto(String address,
+                          String city,
+                          Long id,
+                          String info,
+                          String postCode,
+                          Long userId
+    ) {
         this.id = id;
         this.userId = userId;
         this.city = city;
@@ -28,11 +36,17 @@ public class AddressUserDto {
         this.info = info;
     }
 
-    public AddressUserDto(Long id, String city, String address, String postCode) {
+    public AddressUserDto(Long id,
+                          String city,
+                          String address,
+                          String postCode,
+                          boolean active
+    ) {
         this.id = id;
         this.city = city;
         this.address = address;
         this.postCode = postCode;
+        this.active = active;
     }
 
     public Long getId() {
@@ -57,5 +71,9 @@ public class AddressUserDto {
 
     public String getInfo() {
         return info;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 }

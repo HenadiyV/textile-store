@@ -7,18 +7,32 @@ public class PostOfficeUserDto {
     private Long id;
     private Long userId;
     private String postOffice;
-
+    private boolean active;
     private String info;
 
     public PostOfficeUserDto() {
     }
 
-    public PostOfficeUserDto(Long id, Long userId, String postOffice, String info) {
+    public PostOfficeUserDto(Long id,
+                             Long userId,
+                             String postOffice,
+                             String info
+    ) {
         this.id = id;
         this.userId = userId;
         this.postOffice = postOffice;
 
         this.info = info;
+    }
+    public PostOfficeUserDto(Long id,
+                             String postOffice,
+                             String info,
+                             boolean active
+    ) {
+        this.id = id;
+        this.postOffice = postOffice;
+        this.info = info;
+        this.active = active;
     }
 
     public PostOfficeUserDto(Long id, String postOffice) {
@@ -40,5 +54,9 @@ public class PostOfficeUserDto {
 
     public String getInfo() {
         return info;
+    }
+
+    public boolean isActive() {
+        return active;
     }
 }

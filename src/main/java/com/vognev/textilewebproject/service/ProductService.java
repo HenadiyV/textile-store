@@ -1,25 +1,25 @@
 package com.vognev.textilewebproject.service;
 
-import com.vognev.textilewebproject.model.BasketProduct;
+import com.vognev.textilewebproject.model.Cart;
 import com.vognev.textilewebproject.model.ImageProduct;
 import com.vognev.textilewebproject.model.Product;
-import com.vognev.textilewebproject.model.dto.ImageProductDto;
 import com.vognev.textilewebproject.model.dto.ProductDto;
-import com.vognev.textilewebproject.model.dto.ProductWarehouseDto;
 import com.vognev.textilewebproject.repository.ImageProductRepository;
 import com.vognev.textilewebproject.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * textilewebproject_2  13/10/2021-19:55
@@ -46,9 +46,14 @@ public class ProductService {
     private String uploadPath;
 
 
-    public List<Product> findAll() {
+    public Page<Product> getProductListAllPageable(Pageable pageable) {
 
-        return productRepository.findAll();
+        return productRepository.findAll(pageable);
+    }
+
+
+    public List<Product> getAllProduct(){
+        return productRepository.getAllProduct();
     }
 
 
@@ -63,6 +68,7 @@ public class ProductService {
         List<ImageProduct> imgProductList=product.getImageProducts();
 
         for(ImageProduct img: imgProductList){
+
             imageProductService.deleteImageProduct(img);
         }
         productRepository.delete(product);
@@ -73,44 +79,6 @@ public class ProductService {
 
         return productRepository.findAll().size();
     }
-
-
-   public ProductWarehouseDto warehouseDto(){
-
-       Double size=0.0;
-       Double purchace=0.0;
-       Double selling=0.0;
-       Double selling_size=0.0;
-       Double remainder=0.0;
-       Double sum_purchace=0.0;
-       Double sum_selling=0.0;
-       Double sum_remainder_purchace=0.0;
-       Double profit=0.0;
-
-        List<Product> productList = productRepository.findAll();
-
-        for(Product pr : productList ){
-            size+=pr.getSizeProduct();
-            purchace+=pr.getPurchasePrice()*pr.getSizeProduct();
-            selling+=pr.getSellingPrice()*pr.getSizeProduct();
-            selling_size+=pr.getSelling_size();
-            sum_selling+=pr.getSelling_size()*pr.getSellingPrice();
-            sum_purchace+=pr.getSelling_size()*pr.getPurchasePrice();
-        }
-       remainder=size-selling_size;
-       profit=sum_selling-sum_purchace;
-       sum_remainder_purchace=purchace-sum_purchace;
-
-       return new ProductWarehouseDto(
-               size,
-               purchace,
-               selling,
-               selling_size,
-               sum_purchace,
-               sum_selling,
-               sum_remainder_purchace,
-               remainder,profit);
-   }
 
 
    public String getNameProduct(Long id){
@@ -139,8 +107,10 @@ public class ProductService {
             Product product = productRepository.getById(product_id);
 
                 if(operator) {
+
                     product.setSelling_size(product.getSelling_size() + balance);
                 }else{
+
                     product.setSelling_size(product.getSelling_size() - balance);
                 }
             productRepository.save(product);
@@ -151,16 +121,16 @@ public class ProductService {
     }
 
 
-//   public void updateBasketProductSallingSize(Long product_id,double siz){
-//        Product product = productRepository.getById(product_id);
-//       updateProductSallingSize(product_id,siz,false);
-//   }
-
-
     public List<ProductDto> searchProduct(String name){
 
-        List<ProductDto> productDtoList=productRepository.searchListProductDto(name.toUpperCase());
+        List<Product> productList=productRepository.searchProduct(name.toUpperCase());
 
+       List<ProductDto>productDtoList= new ArrayList<>();
+
+        for(Product product : productList){
+
+            productDtoList.add(getProductDto(product.getId(),false));
+        }
         return productDtoList;
     }
 
@@ -173,9 +143,9 @@ public class ProductService {
     }
 
 
-    public List<Product> getProductZbirList(Integer category_id) {
+    public Page<Product> getProductZbirList(Integer category_id, Pageable pageable) {
 
-        return productRepository.productByCategoryId(category_id);
+        return productRepository.productByCategoryId(category_id, pageable);
     }
 
 
@@ -217,7 +187,9 @@ public class ProductService {
         Product product= productRepository.getById(id);
 
         Double balance= product.getSizeProduct()-product.getSelling_size();
-String img=imageProductService.getImageFileName(product.getId());//product.getImageProducts().
+
+        String img=imageProductService.getImageFileName(product.getId());//product.getImageProducts().
+
         ProductDto productDto= new ProductDto(product.getId(),
                 product.getName(),
                 product.getColor(),
@@ -237,21 +209,10 @@ String img=imageProductService.getImageFileName(product.getId());//product.getIm
             productDto.setCategory( product.getCategory());
             productDto.setImageProducts(product.getImageProducts());
         }
-
         productDto.setProduct_balance(balance);
         productDto.setMetr(0.0);
         productDto.setBonus(0.0);
-/*bonus: 0
-color: "Черный"
-id: 1
-info: ""
-metr: 0
-name: "Name"
-orderId: 1
-product_balance: 19
-sellingPrice: 110
-sizeProduct: 50
-summ: 0*/
+
         return productDto;
     }
 
@@ -261,6 +222,7 @@ summ: 0*/
         Product product=productRepository.getById(id);
 
             for(ImageProduct imageProduct:product.getImageProducts()){
+
                 imageProduct.setShowcase(false);
                 imageProductService.saveImageProduct(imageProduct);
             }
@@ -350,8 +312,10 @@ summ: 0*/
                     for (ImageProduct imageProduct : imageProducts) {
 
                         if(imageProduct.isShowcase()&&result){
+
                             result=false;
                         }else{
+
                             imageProduct.setShowcase(false);
 
                             imageProductService.saveImageProduct(imageProduct);
@@ -368,6 +332,7 @@ summ: 0*/
         boolean showcase=true;
 
         for (MultipartFile file : files) {
+
             if (file != null && !file.getName().isEmpty()) {
                 try {
                     ImageProduct imageProduct = new ImageProduct();
@@ -421,6 +386,7 @@ summ: 0*/
                 File uploadDir = new File(uploadPath);
 
             if (!uploadDir.exists()) {
+
                uploadDir.mkdir();
             }
                // String uuidFile = UUID.randomUUID().toString(); uuidFile + "-" +
@@ -462,4 +428,22 @@ summ: 0*/
         }
          return amount;
      }
+
+
+    public Product getById(long productId) {
+        Optional<Product> productOpt= productRepository.findById(productId);
+        return productOpt.orElse(null);
+    }
+
+//    public void corectSizeSellingProduct(ProductDto[] productDtos) {
+//
+//        for(ProductDto pr:productDtos){
+//           // double sizeTemp= getProductById(pr.getId()).getSelling_size();
+//            //updateProductSallingSize(pr.getId(), sizeTemp, false);
+//            //updateProductSallingSize(pr.getId(), pr.getSelling_size(), true);
+//            System.out.println(pr.getId());
+//            //
+//            System.out.println(pr.getSelling_size());
+//        }
+//    }
 }

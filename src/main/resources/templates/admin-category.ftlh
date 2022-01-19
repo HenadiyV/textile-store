@@ -10,7 +10,7 @@
         </a>
         <div class="collapse <#if category??>show</#if>" id="collapseExample">
             <div class="form-group mt-3 mb-3" >
-            <#--action="/main"-->
+
                 <form  method="post" enctype="multipart/form-data">
                     <div class="form-group mt-2">
                         <input type="text" class="form-control ${(nameError??)?string('is-invalid','')} "
@@ -26,6 +26,7 @@
 
                         <input type="hidden" name="_csrf" value="${_csrf.token}" />
 
+                        <label for="id">ID категорії</label>
                         <input type="text" name="id" id="id" value="<#if category??>${category.id}<#else>-1</#if>" />
                         <button class="btn btn-primary ml-2" type="submit">Зберегти</button>
                     </div>

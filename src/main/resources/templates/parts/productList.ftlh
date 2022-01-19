@@ -1,16 +1,18 @@
 <#include "security.ftlh">
-
+<#import "pager.ftlh" as p>
+<@p.pager url page ></@p.pager>
 <div class="container">
     <div class="row">
         <div class="col-10">
         </div>
         <div class="col-2">
+            <#--<a href="javascript:void(0);" onclick="test_user()">Tyt</a>-->
         </div>
     </div>
 
     <div class="row row-cols-1 row-cols-md-3 g-4 mt-1" id="product-list">
 
-    <#list productList as product>
+    <#list page.content as product>
         <div class="col">
             <div class="card">
                 <div> <#if product.imageProducts??>
@@ -38,10 +40,12 @@
                     <span>Ціна: ${product.sellingPrice}</span><br/>
 
                   <#if isAdmin>
+                  <div style="border:1px solid #9c9c9c;background: #ffffcc">
                       <span>Ціна закупки: ${product.purchasePrice}</span><br/>
                       <span>Кількість: ${product.sizeProduct}</span><br/>
                       <span>Продано: ${product.selling_size}</span><br/>
-                      <span>Дата: ${product.dat}</span><br/>
+                      <span>Дата: ${product.dat?date?string('dd-MM-yyyy')}</span><br/>
+                  </div>
                   </#if>
 
                 </div>
@@ -58,45 +62,116 @@
     Повідомлення відсутні
     </#list>
       </div>
-    <div class="container">
-        <div id="myModalBasket" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <span class="close" id="closeMyModalBasket">&times;</span>
-                    <h2>Оформити замовленя</h2>
-                </div>
-                <div class="modal-body">
-                    <div class="title-cart">
-                        <#if basketId??><a href="/basket/delete/${basketId}" class="btn btn-danger">Очистити</a></#if>
-                        <div id="place-basket"> </div>
+
+    <#if user??>
+        <div class="container">
+            <div id="myBasketUser" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span class="close" id="closeMyBasketUser">&times;</span>
+                        <h2>Оформити замовленя</h2>
                     </div>
-                    <div class="body-cart">
-                        <div class="table-content-center">
-                            <form action="/basket/ordering" method="post">
-                            <label for="username">Ваше імя</label> <br/>
-                            <input type="text" name="username" id="username" value=""/><br/>
-
-                            <label for="phone">Ваш телефон</label> <br/>
-                            <input type="text" name="phone" id="phone" value=""/><br/>
-
-                            <label for="info">Додаткова інформація до замовленя</label><br/>
-                            <textarea name="info" id="info" cols="30" rows="3" style="width: 50%"></textarea><br/>
-                            <input type="hidden" name="token" id="token_ordering"/>
-                                <input type="hidden" class="input-with" name="_csrf"  value="${_csrf.token}"/>
-                             <button class="btn btn-primary mt-1" type="submit">Замовити</button>
-                            <#--id="basket_csrf"<a class="btn btn-primary mt-1" onclick="saveBasket()">Замовити</a>-->
-                            </form>
+                    <div class="modal-body">
+                        <div class="title-cart">
+                            <#if basketId??><a href="/basket/delete/${basketId}" class="btn btn-danger">Очистити</a></#if>
+                            <div id="place-basket"> </div>
                         </div>
+                        <div class="body-cart">
+                            <div class="table-content-center">
 
-                        <div id="table_place" class="row mt-2"></div>
+                                <form action="/basket/user-ordering" method="post">
+                                    <div class="row">
+                                        <div class="col-sm-4">
+                                            <label for="b_user">Ваше імя</label> <br/>
+                                            <input type="text" name="userId" id="b_user" value="${user.id}" class="input-with"/><br/>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <label for="b_phone">Ваш телефон</label> <br/>
+
+                                            <select id="b_phone" name="phone"></select><br/>
+                                        </div>
+
+                                        <div class="col-sm-4">
+                                            <label for="b_postOffice">Ваша пошта</label> <br/>
+
+                                            <select id="b_postOffice" name="postOffice"></select><br/>
+                                        </div>
+                                    </div>
+
+                                    <div class="centr">
+                                        </div>
+
+                                    <div class="row">
+                                    <div class="col-sm-1 col-md-2 col-xl-3"></div>
+                                        <div class="col-md-8 col-sm-10 col-xl-6 centr">
+                                            <label for="b_address" class="centr">Ваша адресса</label> <br/>
+
+                                            <select id="b_address" name="address" class="input-with centr"></select><br/>
+                                         </div>
+                                        <div class="col-sm-1 col-md-2 col-xl-3"></div>
+                                    </div>
+
+                                    <label for="b_info">Додаткова інформація до замовленя</label><br/>
+                                    <textarea name="info" id="b_info" cols="30" rows="3" style="width: 50%"></textarea><br/>
+                                    <input type="hidden" name="token" id="b_token_ordering"/>
+                                    <input type="hidden" class="input-with" name="_csrf"  value="${_csrf.token}"/>
+                                    <button class="btn btn-primary mt-1" type="submit">Замовити</button>
+                                </form>
+
+                            </div>
+
+                            <div id="table_place" class="row mt-2"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
+                    <div class="modal-footer">
                     <#--<h3>Футер модального окна</h3>-->
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    <#else>
+        <div class="container">
+            <div id="myModalBasket" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span class="close" id="closeMyModalBasket">&times;</span>
+                        <h2>Оформити замовленя</h2>
+                    </div>
+                    <div class="modal-body">
+                        <div class="title-cart">
+                        <#if basketId??><a href="/basket/delete/${basketId}" class="btn btn-danger">Очистити</a></#if>
+                            <div id="place-basket"> </div>
+                        </div>
+                        <div class="body-cart">
+                            <div class="table-content-center">
+
+                                <form action="/basket/ordering" method="post">
+                                    <label for="username">Ваше імя</label> <br/>
+                                    <input type="text" name="username" id="username" value=""/><br/>
+
+                                    <label for="phone">Ваш телефон</label> <br/>
+                                    <input type="text" name="phone" id="phone" value=""/><br/>
+
+                                    <label for="info">Додаткова інформація до замовленя</label><br/>
+                                    <textarea name="info" id="info" cols="30" rows="3" style="width: 50%"></textarea><br/>
+                                    <input type="hidden" name="token" id="token_ordering"/>
+                                    <input type="hidden" name="userId" id="userId" value="<#if user??>${user.id}<#else>0</#if>"/>
+                                    <input type="hidden" class="input-with" name="_csrf"  value="${_csrf.token}"/>
+                                    <button class="btn btn-primary mt-1" type="submit">Замовити</button>
+                                </form>
+
+                            </div>
+
+                            <div id="table_place" class="row mt-2"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                    <#--<h3>Футер модального окна</h3>-->
+                    </div>
+                </div>
+            </div>
+        </div>
+</#if>
 
     <div class="container">
         <div id="myModalOrdering" class="modal">
@@ -121,13 +196,14 @@
                                     <br/>
                                 </div>
                                 <div class="col-sm-6 table-content-center">
-                                    <form action="/basket/add-product" method="post">
+
+                              <form action="/basket/add-product" method="post">
 
                                 <input type="hidden" class="input-with" name="_csrf" value="${_csrf.token}"/>
                                     <span id="place_price"></span><br/>
                                     <span id="place_summ"></span><br/>
                                     <label for="size">Введіть кількість</label> <br/>
-                                    <input type="number" name="size" min=0 id="size" style="width: 100%"/><br/>
+                                    <input type="number" name="size" min=0 step="0.1" id="size" style="width: 100%"/><br/>
                                     <input type="hidden" name="productId" id="productId"/>
                                     <input type="hidden" name="price" id="price" readonly/>
                                     <input type="hidden" name="img" id="img_product" />
@@ -136,7 +212,9 @@
                                     <label for="info">Додаткова інформація</label>
                                     <textarea name="info" id="info" cols="30" rows="3" style="width: 100%"></textarea><br/>
                                         <button class="btn btn-primary mt-1" type="submit" id="add_to_basket">Додати до кошика</button>
-                                    </form>
+
+                              </form>
+
                                </div>
                             </div>
                         </div>
@@ -151,7 +229,9 @@
 
     </div>
 </div>
+<script>
 
+</script>
 
 <script src="/static/js/image-view.js"></script>
 <script src="/static/js/product.js"></script>

@@ -16,7 +16,6 @@ import java.util.Set;
  */
 public class ProductDto {
     private Long id;
-
     private String name;
     private String color;
     private double sizeProduct;
@@ -26,7 +25,6 @@ public class ProductDto {
     private String description;
     private Date dat;
     private Double selling_size;
-
     private String info;
     private String img;
     private int category_id;
@@ -38,9 +36,18 @@ public class ProductDto {
 
 public ProductDto() {
 }
-    public ProductDto(Long id, String name, String color, double sizeProduct,
-                      double sellingPrice, boolean active, String description, Date dat,
-                      Double selling_size, String info,String img) {
+    public ProductDto(Long id,
+                      String name,
+                      String color,
+                      double sizeProduct,
+                      double sellingPrice,
+                      boolean active,
+                      String description,
+                      Date dat,
+                      Double selling_size,
+                      String info,
+                      String img
+    ) {
         this.id = id;
         this.name = name;
         this.color = color;
@@ -55,14 +62,21 @@ public ProductDto() {
         this.img = img;
     }
 
-    public ProductDto(Long id, String name, String color, double sizeProduct,
-                      double sellingPrice, boolean active, String description, Date dat,
-                      Double selling_size, String info) {
+    public ProductDto(Long id,
+                      String name,
+                      String color,
+                      double sizeProduct,
+                      double sellingPrice,
+                      boolean active,
+                      String description,
+                      Date dat,
+                      Double selling_size,
+                      String info
+    ) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.sizeProduct = sizeProduct;
-        //this.purchasePrice = purchasePrice;//double purchasePrice,
         this.sellingPrice = sellingPrice;
         this.active = active;
         this.description = description;
@@ -94,6 +108,12 @@ public ProductDto() {
         this.bonus = bonus;
         this.imageProducts = imageProducts;
         this.category = category;
+    }
+
+
+    public ProductDto(Long id, Double selling_size) {
+        this.id = id;
+        this.selling_size = selling_size;
     }
 
     public Long getId() {

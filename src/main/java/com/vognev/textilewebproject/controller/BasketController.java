@@ -1,13 +1,18 @@
 package com.vognev.textilewebproject.controller;
 
 
-import com.vognev.textilewebproject.model.BasketProduct;
+import com.vognev.textilewebproject.model.*;
 import com.vognev.textilewebproject.model.dto.BasketDto;
 import com.vognev.textilewebproject.model.dto.BasketProductDto;
 import com.vognev.textilewebproject.model.util.MyCookies;
 import com.vognev.textilewebproject.service.BasketProductService;
 import com.vognev.textilewebproject.service.BasketService;
+import com.vognev.textilewebproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +38,8 @@ public class BasketController extends HttpServlet {
     @Autowired
     private BasketProductService basketProductService;
 
+    @Autowired
+    private ProductService productService;
 
     @PostMapping("add-product")
     public String addProductToBasket(
@@ -42,9 +49,12 @@ public class BasketController extends HttpServlet {
             @RequestParam("info")String info,
             @RequestParam("img")String img,
             @RequestParam("token")String token
+
     ){
         BasketProductDto basketProductDto = new BasketProductDto(productId,info,size,price,img,token);
+
         basketProductService.saveBasketProduct(basketProductDto);
+
     return"redirect:/";
     }
 
@@ -55,23 +65,43 @@ public class BasketController extends HttpServlet {
             @RequestParam("phone")String phone,
             @RequestParam("info")String info,
             @RequestParam("token")String token,
-
+            @RequestParam("userId")Long userId,
             HttpServletRequest request,
             HttpServletResponse response
     ){
-        BasketDto basketDto= new BasketDto(username,phone,info,token);
+        BasketDto basketDto= new BasketDto(username,phone,info,token,userId);
+
         MyCookies.deleteCookie(request,response);
-       // basketService.createOrder(basketDto);
+
+        basketService.createOrder(basketDto);
+
+        return"redirect:/";
+    }
+
+     @PostMapping("user-ordering")
+    public String orderingUser(
+             @RequestParam("userId")MyUser user,
+             @RequestParam("phone")PhoneUser phone,
+            @RequestParam("address")AddressUser address,
+            @RequestParam("postOffice")PostOfficeUser postOffice,
+            @RequestParam("info")String info,
+            @RequestParam("token")String token,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ){
+         basketService.createOrderToUser(user,phone, address,postOffice,info,token);
+
+        MyCookies.deleteCookie(request,response);
+        //basketService.createOrder(basketDto);
         return"redirect:/";
     }
 
     @GetMapping("delete/{id}")
-    public String deleteBasket(@PathVariable("id")Long basketId,
-                               HttpServletRequest request,
-                               HttpServletResponse response
+    public String deleteBasket(
+            @PathVariable("id")Long basketId,
+            HttpServletRequest request,
+            HttpServletResponse response
     ){
-        System.out.println("deleteBasket "+basketId);
-
         basketService.deleteBasketById(basketId);
 
         MyCookies.deleteCookie(request,response);
@@ -79,3 +109,4 @@ public class BasketController extends HttpServlet {
         return"redirect:/";
     }
 }
+//=========== BasketController ================

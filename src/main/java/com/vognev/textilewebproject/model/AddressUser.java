@@ -25,6 +25,8 @@ public class AddressUser implements Serializable {
 
     private String info;
 
+    private boolean active;
+
     @ManyToOne(fetch =FetchType.LAZY)
     @JoinColumn(name="user_id")
     private MyUser addressUser;
@@ -32,12 +34,13 @@ public class AddressUser implements Serializable {
     public AddressUser() {
     }
 
-    public AddressUser(String city, String address, String postCode, String info, MyUser addressUser) {
+    public AddressUser(String city, String address, String postCode, String info,boolean active,MyUser addressUser) {
         this.city = city;
         this.address = address;
         this.postCode = postCode;
         this.info = info;
         this.addressUser = addressUser;
+        this.active = active;
     }
 
     public Long getId() {
@@ -86,5 +89,13 @@ public class AddressUser implements Serializable {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 }

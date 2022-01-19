@@ -1,8 +1,8 @@
 package com.vognev.textilewebproject.service;
 
 
-import com.vognev.textilewebproject.model.Basket;
-import com.vognev.textilewebproject.model.BasketProduct;
+import com.vognev.textilewebproject.model.*;
+import com.vognev.textilewebproject.model.dto.BasketDto;
 import com.vognev.textilewebproject.model.util.Constants;
 import com.vognev.textilewebproject.repository.BasketRepository;
 import org.junit.Assert;
@@ -29,6 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource("/application-test.properties")
+@Sql(value = {"/create-user-before.sql"},executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(value = { "/create-user-after.sql"},executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
+@Sql(value = {"/create-product-before.sql"},executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(value = { "/create-product-after.sql"},executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 @Sql(value = {"/create-basket-before.sql"},executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 @Sql(value = { "/create-basket-after.sql"},executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class BasketServiceTest {
@@ -41,8 +45,23 @@ class BasketServiceTest {
     @Autowired
     private BasketRepository basketRepository;
 
+    @Autowired
+    private UserService userService;
+
+    @Autowired
+    private PhoneService phoneService;
+
+    @Autowired
+    private AddressService addressService;
+
+    @Autowired
+    private PostOfficeService postService;
+
+    @Autowired
+    private OrderService orderService;
+
     @Test
-    public void test()throws Exception{
+     void test()throws Exception{
         assertThat(basketService).isNotNull();
     }
 
@@ -93,12 +112,9 @@ class BasketServiceTest {
 
     @Test
     void addBasket(){
-        Date dat = new Date();
-        long today=dat.getTime()+Constants.ONE_DAY;
-        Date today1=new Date(today);
-        Basket basket = new Basket(null,"7777777777777777","test","12345"," ",
-                                    dat,today1,null);
-        basketService.saveBasket(basket);
+
+        createBasket();
+
         List<Basket> basketList = basketService.getBasketList();
         Assert.assertEquals(7,basketList.size());
     }
@@ -117,17 +133,75 @@ class BasketServiceTest {
     }
 
     @Test
-    void deleteRancidCookies(){
+    void deleteRancidCookies()throws Exception{
+
+        createBasket();
+
+        List<Basket> basketList = basketService.getBasketList();
+        Assert.assertEquals(7,basketList.size());
+
+        basketService.deleteRancidCookies();
+
+        List<Basket> basketList1 = basketService.getBasketList();
+        Assert.assertEquals(6,basketList1.size());
+    }
+
+    @Test
+    void addBasketToUser()throws Exception{
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+//        MyUser user =  new MyUser("test","test@test.test","1",100,true);
+//        PhoneUser phoneUser=new PhoneUser("123321",true,user);
+//        AddressUser addressUser = new AddressUser("city","address","1234567890"," ",user);
+//        PostOfficeUser postOfficeUser = new PostOfficeUser("nova",true,user," ");
+        //List<MyUser> userList = userService.findAll();
+        Assert.assertEquals(5,userService.findAll().size());
+        Assert.assertEquals(5,addressService.findAll().size());
+        Assert.assertEquals(7,phoneService.findAll().size());
+        Assert.assertEquals(5,postService.findAll().size());
+
+
+    }
+
+    @Test
+    void addBasketToUserAddress()throws Exception{
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+
+        Assert.assertEquals(5,addressService.findAll().size());
+
+    }
+    @Test
+    void addBasketToUserPhone()throws Exception{
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+
+        Assert.assertEquals(7,phoneService.findAll().size());
+
+    }
+    @Test
+    void addBasketToUserPostOffice()throws Exception{
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+
+        Assert.assertEquals(6,postService.findAll().size());
+    }
+
+    @Test
+    void addBasketToOrder()throws Exception{
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+
+        Assert.assertEquals(3,orderService.findAll().size());
+    }
+
+    @Test
+    void getClearDatList()throws Exception{
+        Date dat = new Date();
+        Assert.assertEquals(6,basketRepository.searchBasketToClearDate(dat).size());
+    }
+
+    Basket createBasket(){
         Date dat = new Date();
         long today=dat.getTime();
         Date today1=new Date(today);
         Basket basket = new Basket(null,"7777777777777777","test","12345"," ",
-                dat,today1,null);
-        basketService.saveBasket(basket);
-        List<Basket> basketList = basketService.getBasketList();
-        Assert.assertEquals(7,basketList.size());
-        basketService.deleteRancidCookies();
-        List<Basket> basketList1 = basketService.getBasketList();
-        Assert.assertEquals(6,basketList1.size());
+                dat,today1,2L,null);
+     return   basketService.saveBasket(basket);
     }
 }

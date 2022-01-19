@@ -21,10 +21,10 @@ public class Order {
     @Temporal(TemporalType.DATE)
     private Date dat_dispatch;
 
-    @NotNull(message = "status cannot be empty")
+   // @NotNull(message = "status cannot be empty")
     private String status;
 
-    @NotNull(message = "delivery cannot be empty")
+    //@NotNull(message = "delivery cannot be empty")
     private String delivery;
 
     private String info;
@@ -56,8 +56,8 @@ public class Order {
 
     public Order(Long id,
                  Date dat_dispatch,
-                 @NotNull(message = "status cannot be empty") String status,
-                 @NotNull(message = "delivery cannot be empty") String delivery,
+                  String status,//@NotNull(message = "status cannot be empty")
+                 String delivery, //@NotNull(message = "delivery cannot be empty")
                  String info_order,
                  Date dat_create,
                  MyUser user,
@@ -68,7 +68,7 @@ public class Order {
         this.dat_dispatch = dat_dispatch;
         this.status = status;
         this.delivery = delivery;
-        this.info = info;
+        this.info = info_order;
         this.dat_create = dat_create;
         this.user = user;
         this.addressUser = addressUser;

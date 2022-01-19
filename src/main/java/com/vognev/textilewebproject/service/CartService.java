@@ -1,9 +1,6 @@
 package com.vognev.textilewebproject.service;
 
-import com.vognev.textilewebproject.model.Cart;
-import com.vognev.textilewebproject.model.CartDeleted;
-import com.vognev.textilewebproject.model.Order;
-import com.vognev.textilewebproject.model.Product;
+import com.vognev.textilewebproject.model.*;
 import com.vognev.textilewebproject.model.dto.CartDto;
 import com.vognev.textilewebproject.model.util.OrderSumm;
 import com.vognev.textilewebproject.model.dto.UserProductDto;
@@ -15,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.zip.ZipFile;
 
 /**
  * textilewebproject_2  24/10/2021-19:11
@@ -41,36 +40,39 @@ public class CartService {
     @Autowired
     private CartDeletedRepository cartDeletedRepository;
 
+    @Autowired
+    private ImageProductService imageProductService;
+
 
     public CartDto getCartDto(Long id){
 
-        Cart cart= cartRepository.getById(id);
+        Cart cart= getById(id);
 
-        Product product=productService.getProductById(cart.getProduct_id());
+        if(cart!=null) {
+            Product product = productService.getProductById(cart.getProduct_id());
 
-        Double summ=(cart.getSiz()*cart.getSalePrice()-cart.getDiscount_price());
+            ImageProduct imageProduct = imageProductService.getImageProductById(product.getId());
 
-        Double balance=product.getSizeProduct()-product.getSelling_size();
+            Double summ = (cart.getSiz() * cart.getSalePrice() - cart.getDiscount_price());
 
-        return new CartDto(id,
-                cart.getOrder().getId(),
-                cart.getProduct_id(),
-                cart.getNameProduct(),
-                cart.getSalePrice(),
-                product.getSizeProduct(),
-                balance,
-                cart.getSiz(),
-                summ,
-                cart.getDiscount_price(),
-                cart.getInfo());
-    }
+            Double balance = product.getSizeProduct() - product.getSelling_size();
 
-
-    public void saveCart(Cart cart){
-
-        Cart cart1=cart;
-
-        cartRepository.save(cart1);
+            return new CartDto(id,
+                    cart.getOrder().getId(),
+                    cart.getProduct_id(),
+                    cart.getNameProduct(),
+                    cart.getSalePrice(),
+                    product.getSizeProduct(),
+                    balance,
+                    cart.getSiz(),
+                    summ,
+                    cart.getDiscount_price(),
+                    cart.getInfo(),
+                    imageProduct.getImgProduct()
+                    );
+        }else{
+            return null;
+        }
     }
 
 
@@ -81,7 +83,6 @@ public class CartService {
                 productService.updateProductSallingSize(crt.getProductId(),crt.getSiz(),true);
 
                 Cart cart= new Cart(
-                        null,
                         crt.getProductId(),
                         crt.getSellingPrice(),
                         crt.getProductName(),
@@ -91,16 +92,7 @@ public class CartService {
                         order.getDat_create(),
                         order);
 
-//                System.out.println( crt.getCartId());//1
-//                System.out.println( cart.getId());//null
-//                System.out.println( crt.getOrderId());//3
-//                System.out.println( cart.getOrder().getId());//null
-//                System.out.println( crt.getProductId()); //1
-//                System.out.println( cart.getProduct_id());//1
-//                System.out.println( crt.getProductName());//Name
-//                System.out.println( cart.getNameProduct());//Name
-
-                cartRepository.save(cart);
+               save(cart);
             }
         }catch(Exception ex){
             System.out.println("createCartByOrderErr");
@@ -119,7 +111,8 @@ public class CartService {
 
             Product product =productService.getProductById(cr.getProduct_id());
 
-            cartDtos.add(new CartDto(
+            ImageProduct imageProduct = imageProductService.productByImage(product.getId());
+            CartDto cartDto = new CartDto(
                     cr.getId(),
                     orderId,
                     product.getId(),
@@ -130,7 +123,11 @@ public class CartService {
                     cr.getSiz(),
                     cr.getSiz()*cr.getSalePrice()-cr.getDiscount_price(),
                     cr.getDiscount_price(),
-                    cr.getInfo()));
+                    cr.getInfo(),
+            imageProduct.getImgProduct()
+            );
+            cartDtos.add(cartDto);
+
             summ+=cr.getSiz()*cr.getSalePrice()-cr.getDiscount_price();
         }
 
@@ -150,7 +147,7 @@ public class CartService {
 
             productService.updateProductSallingSize(cart1.getProductId(), cart1.getSiz(),true);
 
-            Cart cart = new Cart(null,
+            Cart cart = new Cart(
                     cart1.getProductId(),
                     cart1.getSellingPrice(),
                     cart1.getProductName(),
@@ -160,7 +157,7 @@ public class CartService {
                     dat,
                     order);
 
-            cartRepository.save(cart);
+            save(cart);
         }
        }catch(Exception ex){
             System.out.println("addCartToOrderErr");
@@ -176,15 +173,10 @@ public class CartService {
                            Double discount_price,
                            String product_name,
                            String info_cart,
-                           Double balance_product){
-//        Product product=productService.getProductById(product_id);
-//
-//        if(productDto.getSizeProduct()-productDto.getSelling_size()!=balance_product){
-//
-//            productService.updateProductSallingSize(product_id,balance_product,false);
-//        }
+                           Double balance_product
+    ){
         Cart cartDB= cartRepository.getById(cartId);
-       // Order order=cartDB.getOrder();
+
         if(siz>0&&cartDB.getSiz()!=siz){
 
                 productService.updateProductSallingSize(product_id,cartDB.getSiz(),false);
@@ -198,9 +190,8 @@ public class CartService {
         cartDB.setSalePrice(salePrice);
         cartDB.setNameProduct(product_name);
         cartDB.setInfo(info_cart);
-//        Cart cart=new Cart(cartId,product_id,salePrice,product_name,siz,
-//                discount_price,info_cart,order.getDat_create(),order);
 
+       save(cartDB);
     }
 
 
@@ -209,6 +200,7 @@ public class CartService {
         double summ=0.0;
 
         for(Cart crt:carts){
+
             summ+=crt.getSiz()*crt.getSalePrice();
         }
         return summ;
@@ -300,30 +292,29 @@ public class CartService {
         }
         return userProductDtos;
     }
+
+
+    public Cart save(Cart cart) {
+        return cartRepository.save(cart);
+    }
+
+
+    public List<Cart> findAll() {
+        return cartRepository.findAll();
+    }
+
+
+    public Cart getById(long cartId) {
+        try{
+
+            Optional<Cart> cartOpt=cartRepository.findById(cartId);
+
+            return cartOpt.orElse(null);
+        }catch(Exception ex){
+            System.out.println("Error-getCartById 315");
+            ex.printStackTrace();
+            return null;
+        }
+    }
 }
 //====================CartService  ===============
-
-//  productService.updateProductSallingSize(crt.getProductId(),crt.getBalance());
-
-//                CartDeleted cartDeleted= new CartDeleted(
-//                        crt.getOrder().getUser().getId(),
-//                        crt.getOrder().getId(),
-//                        crt.getId(),
-//                        crt.getProduct_id(),
-//                        crt.getNameProduct(),crt.getSiz(),
-//                        crt.getSiz()*crt.getSalePrice(),
-//                        crt.getDiscount_price(),
-//                        crt.getDat(),
-//                        dat,
-//                        crt.getInfo()
-//                );
-//
-//                Product product= productService.getProductById(crt.getProduct_id());
-//
-//                Double balance=product.getSizeProduct()-product.getSelling_size()+crt.getSiz();
-//
-//                productService.updateProductSallingSize(crt.getProduct_id(),balance,false);
-//
-//                cartDeletedRepository.save(cartDeleted);
-//
-//                cartRepository.delete(crt);

@@ -9,6 +9,9 @@ import com.vognev.textilewebproject.service.ImageProductService;
 import com.vognev.textilewebproject.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -44,7 +47,7 @@ public class ProductController {
     @GetMapping("/product")
     public String allProducts(Model model){
 
-        model.addAttribute("productList", productService.findAll());
+        model.addAttribute("productList", productService.getAllProduct());
 
         return "admin-product";
     }
@@ -65,29 +68,38 @@ public class ProductController {
             BindingResult bindingResult,
             @RequestParam String dat_dispatch,
             @RequestParam(value = ("files"),required = false) MultipartFile[] files,
-            Model model
+            Model model,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
     ) throws IOException {
+
         if(bindingResult.hasErrors()){
 
             model.addAttribute("categoryList",categoryService.findAll());
 
             Map<String,String> errors=ControllerUtils.getErrors(bindingResult);
+
             model.mergeAttributes(errors);
             model.addAttribute("product",product);
+
             return "parts/productEdit";
         }
         Date dat= DateHelper.convertStringToDate(dat_dispatch);
+
         product.setDat(dat);
 
        productService.addProduct(product,files);
-        model.addAttribute("productList", productService.findAll());
+
+        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
+
         return "redirect:/product";
     }
 
 
     @GetMapping("/edit-product/{product}")
-    public String editProduct(@PathVariable Long product, Model model){
-
+    public String editProduct(
+            @PathVariable Long product,
+            Model model
+    ){
         ProductDto pr= productService.getProductDtoByProductId(product);
 
         model.addAttribute("product",pr);
@@ -111,8 +123,9 @@ public class ProductController {
             @RequestParam(name="selling_size") double selling_size,
             @RequestParam(name="description") String description,
             @RequestParam(name="info") String info,
-            Model model){
-
+            Model model,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
+    ){
         Date dat_product= com.vognev.textilewebproject.model.util.DateHelper.convertStringToDate(dat);
 
         Product pr=id_product;
@@ -128,7 +141,7 @@ public class ProductController {
         pr.setDescription(description);
         pr.setInfo(info);
 
-        model.addAttribute("productList", productService.findAll());
+        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
 
         return "admin-product";
     }
@@ -139,11 +152,13 @@ public class ProductController {
             @RequestParam("id")Long id,
             @RequestParam("imageId")Long imageId,
             @RequestParam("files") MultipartFile files,
-            Model model
+            Model model,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
     ) throws IOException {
+
         productService.updateImageProduct(id,imageId,files);
 
-        model.addAttribute("productList", productService.findAll());
+        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
 
         return "redirect:/product";
     }
@@ -153,11 +168,13 @@ public class ProductController {
     public String addImageProduct(
             @RequestParam(name="id")Long id,
             @RequestParam(name="files") MultipartFile[] files,
-            Model model
+            Model model,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
     ) throws IOException {
+
         productService.addNewImagesToProduct(id,files);
 
-        model.addAttribute("productList", productService.findAll());
+        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
 
         return "redirect:/product";
     }
@@ -166,11 +183,12 @@ public class ProductController {
     @RequestMapping(value="/product/delete-img/{id}", method= RequestMethod.GET)
             public String deleteImage(
                     @PathVariable(name="id")Long imageId,
-                    Model model
+                    Model model,
+                    @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
     ){
         productService.deleteImageProduct(imageId);
 
-        model.addAttribute("productList", productService.findAll());
+        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
 
         return "redirect:/product";
     }

@@ -123,9 +123,18 @@ public class OrderController {
     ){
         Date dat= DateHelper.convertStringToDate(dat_dispatch);
 
-        OrderDto orderDto =new OrderDto(order.getId(),dat,status,delivery, info_order,
-                order.getDat_create(),summ,
-                user,phone_id,address_id,post_office_id);
+        OrderDto orderDto =new OrderDto(
+                order.getId(),
+                dat,
+                status,
+                delivery,
+                info_order,
+                order.getDat_create(),
+                summ,
+                user,
+                phone_id,
+                address_id,
+                post_office_id);
 
         orderService.updateOrderByUser(orderDto);
 
@@ -165,7 +174,6 @@ public class OrderController {
             @RequestParam  (name="info_order")String info_order,
             Model model
     ){
-
         orderService.updateOrder(order,user_id,phone_id,address_id,post_office_id,dat_dispatch,status,delivery,info_order);
 
         model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order.getId()));
@@ -210,27 +218,14 @@ public class OrderController {
             @RequestParam  (name="summ")Double summ,//
             @RequestParam  (name="product_name")String product_name,
             @RequestParam  (name="info_cart")String info_cart,
-            @RequestParam  (name="balance_product")Double balance_product,//
-            Model model
+            @RequestParam  (name="balance_product")Double balance_product
     ){
-//        ProductDto productDto=productService.getProductDtoByProductId(product_id);
-//
-//        if(productDto.getSizeProduct()-productDto.getSelling_size()!=balance_product){
-//
-//            productService.updateProductSallingSize(product_id,balance_product,false);
-//        }
-//        Order order=orderService.getOrderById(orderId);
-//
-//        Cart cart=new Cart(cartId,product_id,salePrice,product_name,siz,
-//                discount_price,info_cart,order.getDat_create(),order);
-
         cartService.updateCart(cartId,product_id,salePrice,siz,discount_price,product_name, info_cart,balance_product);
-        //cartService.saveCart(cart);
 
         return "redirect:/order/view-order";
     }
 
-
+    @PreAuthorize("hasAuthority('ADMIN')")
     @RequestMapping(value="/add-cart", method= RequestMethod.POST ,
             headers = "Accept=*/*",
             produces = "application/json",
@@ -244,7 +239,8 @@ public class OrderController {
 
         model.addAttribute("orderList",orderService.orderAll());
         model.addAttribute("products", productService.getProductDtoList());
-        return "admin-order";//"redirect:/view-order";//order
+
+        return "admin-order";
     }
 
 
@@ -300,8 +296,7 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/delete-order/{order}")
     public String deleteOrder(
-            @PathVariable Long order,
-            Model model
+            @PathVariable Long order
     ){
         orderService.deleteOrder(order);
 
@@ -312,15 +307,15 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/delete-cart/{cart}")
     public String deleteCart(
-            @PathVariable Cart cart,
-            Model model
+            @PathVariable Cart cart
     ){
-        System.out.println(cart.getNameProduct());
         cartService.deleteCart(cart);
+
         return "redirect:/order/view-order";
     }
 
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/user-product/{id}")
     public String productUserList(
             @PathVariable(name="id")Long id,
@@ -335,4 +330,17 @@ public class OrderController {
 
         return "parts/product-user";
     }
+
+
+    @GetMapping("user/{id}")
+    public String getOrderByUser(
+            @PathVariable(name="id")Long id,
+            Model model
+    ){
+        model.addAttribute("orderList",orderService.orderAllToUser(id));
+        model.addAttribute("products", productService.getProductDtoList());
+
+        return "user";
+    }
 }
+//=============== OrderController ===========

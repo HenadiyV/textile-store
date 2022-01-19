@@ -20,13 +20,14 @@ create table address_user (
   city varchar(255),
   address varchar(255),
   post_code varchar(255),
-  user_id bigint,
+  active tinyint(1) DEFAULT 1,
   info varchar(1024) DEFAULT '',
+  user_id bigint,
   primary key (id)
 ) ;
 
 create table address_deleted (
-  id bigint NOT NULL,
+  id bigint NOT NULL auto_increment,
   address_id bigint NOT NULL,
   user_id bigint NOT NULL,
   city varchar(255) NOT NULL,
@@ -41,11 +42,11 @@ create table phone_user (
   phone varchar(255),
   user_id bigint,
   info varchar(1024) DEFAULT '',
-  active tinyint(1) NOT NULL DEFAULT 1,
+  active tinyint(1)  DEFAULT 1,
   primary key (id)
 );
 create table phone_deleted (
-  id bigint NOT NULL,
+  id bigint NOT NULL auto_increment,
   phone_id bigint NOT NULL,
   user_id bigint NOT NULL,
   phone varchar(32) NOT NULL,
@@ -59,11 +60,11 @@ create table post_office_user (
   post_office varchar(255),
   user_id bigint,
   info varchar(1024) DEFAULT '',
-  active tinyint(1) NOT NULL DEFAULT 1,
+  active tinyint(1)  DEFAULT 1,
   primary key (id)
 ) ;
 create table post_office_deleted (
-  id bigint NOT NULL,
+  id bigint NOT NULL auto_increment,
   post_office_id bigint NOT NULL,
   user_id bigint NOT NULL,
   post_office varchar(50) NOT NULL,
@@ -149,7 +150,6 @@ create table order_deleted (
 
 create table cart (
   id bigint NOT NULL auto_increment,
-  order_id bigint ,
   product_id bigint NOT NULL,
   name_product varchar(255),
   sale_price double NOT NULL,
@@ -157,6 +157,7 @@ create table cart (
   discount_price double DEFAULT NULL,
   dat date NOT NULL,
   info varchar(255) DEFAULT '',
+  order_id bigint ,
   primary key (id)
 );
 create table cart_deleted (

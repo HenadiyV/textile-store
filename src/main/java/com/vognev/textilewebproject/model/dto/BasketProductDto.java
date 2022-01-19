@@ -16,7 +16,13 @@ public class BasketProductDto {
     public BasketProductDto() {
     }
 
-    public BasketProductDto(Long productId, String info, double size, double price, String img,String token) {
+    public BasketProductDto(Long productId,
+                            String info,
+                            double size,
+                            double price,
+                            String img,
+                            String token
+    ) {
         this.productId = productId;
         this.info = info;
         this.size = size;
@@ -25,7 +31,14 @@ public class BasketProductDto {
         this.token = token;
     }
 
-    public BasketProductDto(Long id, Long productId, String info, String token, double size, double price, String img) {
+    public BasketProductDto(Long id,
+                            Long productId,
+                            String info,
+                            String token,
+                            double size,
+                            double price,
+                            String img
+    ) {
         this.id = id;
         this.productId = productId;
         this.info = info;
@@ -37,8 +50,15 @@ public class BasketProductDto {
 
 
 
-    public BasketProductDto(Long id,Long productId,  String info,
-                            String token, double size, double price, String img, String dat) {
+    public BasketProductDto(Long id,
+                            Long productId,
+                            String info,
+                            String token,
+                            double size,
+                            double price,
+                            String img,
+                            String dat
+    ) {
         this.id = id;
         this.productId = productId;
         this.info = info;
@@ -47,6 +67,15 @@ public class BasketProductDto {
         this.price = price;
         this.img = img;
         this.dat = dat;
+    }
+
+    public BasketProductDto(Long id,
+                            Long productId,
+                            double size
+    ) {
+        this.id = id;
+        this.productId = productId;
+        this.size = size;
     }
 
     public Long getId() {

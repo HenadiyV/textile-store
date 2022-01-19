@@ -10,7 +10,9 @@ import java.util.Set;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CaptchaResponceDto {
+
     private boolean success;
+
     @JsonAlias("error-codes")
     private Set<String> errorCodes;
 

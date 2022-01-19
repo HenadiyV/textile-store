@@ -12,7 +12,12 @@ public class AddOrderDto {
     private Long postOfficeId;
     private CartDto[] carts;
 
-    public AddOrderDto(Long userId, Long phoneId, Long addressId, Long postOfficeId, CartDto[] carts) {
+    public AddOrderDto(Long userId,
+                       Long phoneId,
+                       Long addressId,
+                       Long postOfficeId,
+                       CartDto[] carts
+    ) {
         this.userId = userId;
         this.phoneId = phoneId;
         this.addressId = addressId;

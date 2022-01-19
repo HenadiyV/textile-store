@@ -11,9 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.zip.ZipFile;
 
 /**
  * textilewebproject_3  29/12/2021-8:52
@@ -52,8 +51,8 @@ public class BasketService {
     private CartService cartService;
 
 
-     void saveBasket(Basket basket){
-        basketRepository.save(basket);
+    Basket saveBasket(Basket basket){
+      return  basketRepository.save(basket);
     }
 
 
@@ -83,15 +82,10 @@ public class BasketService {
 
 
      Basket getBasketToId(Long id){
-        try{
-            if(basketRepository.foundBasketId(id)){
-                return   basketRepository.getById(id);
-            }else{
-                return null;
-            }
-        }catch(Exception ex){
-            return null;
-        }
+
+        Optional<Basket> basket = basketRepository.findById(id);
+
+        return basket.orElse(null);
     }
 
 
@@ -124,11 +118,13 @@ public class BasketService {
         basketRepository.delete(basket);
     }
 
-    public void deleteRancidCookies(){
+
+    void deleteRancidCookies(){
+
         Date dat = new Date();
+
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd" );// HH:mm:ss
         try {
-
             List<Basket> basketList = basketRepository.searchBasketToClearDate(simpleDateFormat.parse(simpleDateFormat.format(dat)));
 
             if(basketList!=null){
@@ -136,11 +132,11 @@ public class BasketService {
                     basketDelete(basket);
                 }
             }
-
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
+
 
     private List<BasketProductDto> getBasketProductDtoList(Basket basket) {
 
@@ -227,7 +223,8 @@ public class BasketService {
                 basket.getInfo(),
                 basket.getToken(),
                 basket.getDat().toString(),
-                basket.getDat_clear().toString()
+                basket.getDat_clear().toString(),
+                basket.getUserId()
         );
 
     }
@@ -235,43 +232,90 @@ public class BasketService {
 
     public void createOrder(BasketDto basketDto){
 
+        MyUser user= new MyUser();
+        AddressUser address = new AddressUser();
+
+        PostOfficeUser postOffice = new PostOfficeUser();
         PhoneUser phoneUserDB =  phoneService.getNumberPhone(basketDto.getPhone());
+    if(basketDto.getUserId()==0){
 
-        AddressUser addressUser =new AddressUser();
 
-        PostOfficeUser postOfficeUser = new PostOfficeUser();
 
         MyUser myUser =new MyUser();
 
+
+
         if(phoneUserDB ==null){
 
+            int colUser=userService.colUsers();
+
+            String name=colUser+basketDto.getName();
+
             myUser =new MyUser(
-                    basketDto.getUsername(),
-                    basketDto.getUsername()+"@temp.com",
-                    passwordEncoder.encode(basketDto.getUsername()),
+                    basketDto.getName(),
+                    basketDto.getName()+"@temp.com",
+                    passwordEncoder.encode(basketDto.getName()),
                     100,
                     true
             );
+            myUser.setUsername(name);
+            myUser.setInfo(" ");
+            myUser.setEmail(Constants.shortUUID()+"-"+basketDto.getName()+"@temp.com");
+            myUser.setRoles(Collections.singleton(Role.USER));
+
             MyUser myUserDB =userService.saveUserBasket(myUser);
 
-            phoneService.saveUserPhone(basketDto.getPhone(),myUserDB);
+            phoneUserDB= phoneService.saveUserPhone(basketDto.getPhone(),myUserDB);
 
-            addressService.saveBasketAdddress(myUserDB);
+             address =  addressService.saveBasketAdddress(myUserDB);
 
-            postOfficeService.savePostOfficeBasket(myUserDB);
+             postOffice =  postOfficeService.savePostOfficeBasket(myUserDB);
 
         }else{
             myUser =phoneUserDB.getPhoneUser();
+            address = orderService.getAdressUser(myUser);
+            postOffice = orderService.getPostOfficeUser(myUser);
         }
-        Order order=orderService.saveOrderBasket(myUser,basketDto.getInfo());
+
+        user=userService.getUser(myUser.getId());
+    }else{
+
+        user=userService.getUser(basketDto.getUserId());
+    }
+        Order order=orderService.saveOrderBasket(user,address,phoneUserDB,postOffice, basketDto.getInfo());
 
         if(order!=null){
-            createCarts(order,basketDto.getId());
-        }
+            Basket basket = basketRepository.searchBasketToToken(basketDto.getToken());
+            createCarts(order,basket.getId());
+
+       basketDelete(basketRepository.getById(basket.getId()));
+    }
+    }
+
+    public void createOrderToUser(MyUser user,
+                                  PhoneUser phon,
+                                  AddressUser address,
+                                  PostOfficeUser poastOffice,
+                                  String info,
+                                  String token
+    ){
+        Date dat = new Date();
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat( "yyyy-MM-dd" );// HH:mm:ss
+
+        Order orderNew = new Order(null,dat,"не оплачений"," ",info,dat,user,address,phon,poastOffice);
+
+        Order orderDb = orderService.save(orderNew);
+
+        Basket basket=basketRepository.searchBasketToToken(token);
+
+        createCarts(orderDb,basket.getId());
+
+        basketDelete(basketRepository.getById(basket.getId()));
     }
 
 
-    private void createCarts(Order order, Long basketId){
+    void createCarts(Order order, Long basketId){
 
         List<BasketProduct> basketProductList = basketProductService.getBasketProductList(basketId);
 
@@ -281,18 +325,30 @@ public class BasketService {
 
             Product product = productService.getProductById(basketProduct.getProductId());
 
-            Cart cart = new Cart(
-                    null,
-                    product.getId(),
+            Cart cart = new Cart(product.getId(),
                     product.getSellingPrice(),
                     product.getName(),
                     basketProduct.getSize(),
                     0.0,
                     basketProduct.getInfo(),
                     today,
-                    order
-            );
-            cartService.saveCart(cart);
+                    order);
+
+            cartService.save(cart);
         }
     }
+
+
+    public List<Basket> findAll() {
+        return basketRepository.findAll();
+    }
+
+
+    public Basket getById(long basketId) {
+
+        Optional<Basket>basketOptional = basketRepository.findById(basketId);
+
+        return basketOptional.orElse(null);
+    }
+
 }

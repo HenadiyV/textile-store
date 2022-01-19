@@ -10,6 +10,7 @@ import java.util.List;
  * textilewebproject_2  30/09/2021-13:53
  */
 public interface CategoryRepository extends JpaRepository<Category, Integer> {
+
    List<Category> findAll();
 }
 

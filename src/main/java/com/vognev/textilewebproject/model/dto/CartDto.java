@@ -15,6 +15,7 @@ public class CartDto {
     private Double summ;
     private Double discountPrice;
     private String infoCart;
+    private String img;
 
     public CartDto() {
     }
@@ -29,7 +30,8 @@ public class CartDto {
                           Double siz,
                            Double summ,
                             Double discountPrice,
-                             String infoCart
+                             String infoCart,
+                             String img
     ) {
         this.cartId = cartId;
         this.orderId = orderId;
@@ -42,6 +44,7 @@ public class CartDto {
         this.summ = summ;
         this.discountPrice = discountPrice;
         this.infoCart = infoCart;
+        this.img = img;
     }
 
     public Long getCartId() {
@@ -86,5 +89,9 @@ public class CartDto {
 
     public Double getBalance() {
         return balance;
+    }
+
+    public String getImg() {
+        return img;
     }
 }

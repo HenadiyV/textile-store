@@ -94,10 +94,13 @@ if(search_product!=null){
 
 if(search_user!=null){
 
-    search_user.addEventListener('input',function(){
+    search_user.addEventListener("input",function(){
 
-        let url="/rest/us-search/"+this.value;
-
+ let nam =this.value!==''?this.value:'&#8193;';
+// if(this.value.length>0)nam =this.value;
+         //console.log(nam);
+        let url="/rest/us-search/"+nam;
+       // console.log(nam);
         myFetchFunction(url,null,"Get",'','userL');
     });
 }
@@ -105,7 +108,7 @@ if(search_user!=null){
 if(dat_dispatch) {
 
     dat_dispatch.addEventListener('click', function () {
-
+        dat_dispatch.value='';
         let options = {
             year: 'numeric',
             month: 'numeric',
@@ -145,6 +148,7 @@ function dataReturnFetchUserList(data1,place){
 function dataReturnFetchUser(data1,place){
 
     let newPalce= document.getElementById(place);
+    let us_name_order= document.querySelector("#us_name_order");
     let user_id= document.querySelector("#user_id");
     let phone_id= document.querySelector("#phone_id");
     let address_id= document.querySelector("#address_id");
@@ -157,7 +161,8 @@ function dataReturnFetchUser(data1,place){
 
     user_id.value=data.id;
 
-    newPalce.innerHTML=data.username+" | "+data.name;
+    us_name_order.innerHTML=data.username;
+    newPalce.innerHTML=data.name;
 
     let order_phone_el=[];
 
@@ -260,7 +265,7 @@ function viewDataReturnFetch(data,place1){
 
         case "productL": dataReturnFetchProductList(data,"productL");break;
 
-        case "productList": createProductList(data1,"productList"); break;
+        case "productList": createProductList(data,"productList"); break;
 
         case "us_order": dataReturnFetchUser(data,"us_order"); break;
 
@@ -270,6 +275,7 @@ function viewDataReturnFetch(data,place1){
 
 
 function myFetchFunction(url,data,method,csrf,place){
+    console.log("url= "+url);
     try {
         const response = fetch(url,
             {
@@ -293,10 +299,10 @@ function myFetchFunction(url,data,method,csrf,place){
 
 // таблица товара для заказа
 function createProductTableToOrder(data,place){
-
+//console.log(data);
     let divCart = ["<table class='table-modal'><thead><tr><th class='td-hidden'>id</th><th>назва</th>" +
                     "<th>колір</th><th>остаток</th><th>ціна</th><th>продаж</th><th>знижка</th>"+
-                    "<th>інфо</th><th>X</th></tr></thead><tbody>"];
+                    "<th>інфо</th><th>img</th><th>X</th></tr></thead><tbody>"];
 
     let d = '';
 
@@ -306,17 +312,18 @@ function createProductTableToOrder(data,place){
 
             let ob = v[1];
 
-            d += "<tr>"
-                +"<td class='td-hidden'>"+ob.id+"</td>"
-                +"<td><div class='tag'> "+ob.name+"</div> </td>"
-                +"<td><div class='tag'> "+ob.color+"</div> </td>"
-                +"<td>"+ ob.product_balance+"</td>"
-                +"<td>"+ob.sellingPrice+"</td>"
-                +"<td><input type='number' name='metr' min='0' data-metr="+v[0]+" max="+ob.product_balance+"  value="+ob.metr+" /></td>"
-                +"<td><input type='number' name='bonus' data-bonus="+v[0]+" value="+ob.bonus+" /></td>"
-                +"<td><input type='text' name='info' data-info="+v[0]+" value="+ob.info+" /></td>"
-                +"<td><input class='btn btn-primary ' onclick='delProductToOrder("+v[0]+","+place+")' value='X' readonly /></td>"
-                +"</tr>";
+            d += `<tr>
+                <td class='td-hidden'>${ob.id}</td>
+                <td><div class='tag'>${ob.name}</div> </td>
+                <td><div class='tag'>${ob.color}</div> </td>
+                <td>${ob.product_balance} </td>
+                <td>${ob.sellingPrice}</td>
+                <td><input type='number' name='metr' min='0' data-metr='${v[0]}' max="&{ob.product_balance}"  value="${ob.metr}" /></td>
+                <td><input type='number' name='bonus' data-bonus="${v[0]}" value="${ob.bonus}" /></td>
+                <td><input type='text' name='info' data-info="${v[0]}" value="${ob.info}" /></td>
+                <td><img src="/img/${v[1].img}"  /></td>
+                <td><input class='btn btn-primary ' onclick='delProductToOrder(${v[0]},${place})' value='X' readonly /></td>
+                </tr>`;
         }
     }
     divCart.push(d);
@@ -428,7 +435,7 @@ function summOrder(productToCartMap) {
             summ += v[1].metr * v[1].sellingPrice - v[1].bonus;
         }
     }
-    titleSumm.innerHTML =orderSumm+ summ;
+    titleSumm.innerHTML =orderSumm+"<b>"+summ+"</b>" ;
 }
 
 // остаток
@@ -602,13 +609,16 @@ function modalShow(id) {
 
             sale_price_span.innerHTML="Ціна продажу: "+data.sellingPrice;
             salePrice_inpt.value=data.sellingPrice;
+
             let info_cart_inpt=document.querySelector("textarea[name='info_cart']");
             balance=data.balance;
             balance_span.innerHTML="Остаток: "+balance;
+
             id_inpt.value=data.cartId;
             order_id_inpt.value=data.orderId;
             product_id_inpt.value=data.productId;
             product_name_inpt.value=data.productName ;
+
             salle=data.sellingPrice;
             siz_inpt.value=data.siz ;
             siz_inpt.setAttribute("data-siz",data.siz);
@@ -647,7 +657,7 @@ if(spanAddCartToOrder){
 function  addCartToOrderShow(order_id, order_summ) {
 
     orderId=order_id;
-console.log(orderId);
+
     if(addCartToOrder){
 
         addCartToOrder.style.display = "block";
@@ -684,11 +694,10 @@ console.log(orderId);
 //таблица для добавления к заказу
 function createProductList(data,place){
 
-    //let data=JSON.parse(data1);
-
     let tab = ["<table id='productTable' class='table-modal'><thead><tr><th class='td-hidden'>id</th>" +
                 "<th class='table-text'>назва</th><th>остаток</th>" +
-                "<th>ціна</th></tr></thead> <tbody>"];
+                "<th>ціна</th>" +
+    "<th>img</th></tr></thead> <tbody>"];
 
     for (let i = 0; i < data.length; i++) {
 
@@ -697,12 +706,13 @@ function createProductList(data,place){
         let product = data[i];
 
         productMap.set(productId1, createObjectProduct(product));
-       // console.log(productMap);
+
         let tr = "<tr>" +
             "<td class='td-hidden'>"+data[i].id+"</td>" +
             "<td ><div class='tag'>" + data[i].name + "</div></td>" +
             "<td>" + data[i].product_balance + "</td>" +
             "<td>" + data[i].sellingPrice + "</td>" +
+            "<td><img src=/img/"+ data[i].img + "/></td>" +
             "</tr>";
         if (tr.length > 4) {
             tab.push(tr);
@@ -717,7 +727,7 @@ function createProductList(data,place){
 
 //создание обьекта для таблицы товара
 function createObjectProduct(ob) {
-    //console.log(ob);
+
     let ordId1=orderId===-1?null:orderId;
 
     return {
@@ -742,8 +752,6 @@ function addProduct() {
 
     let product = this.innerHTML;
 
-
-
     if (product.indexOf("th") < 0) {
 
         document.querySelector("#productAddCartList").innerHTML = '';
@@ -751,14 +759,6 @@ function addProduct() {
         let productT = product.split("</td>")[0];
 
         let prd=productT.substring(productT.indexOf('>')+1, productT.length);
-        // console.log(productT);
-        // console.log(prd);
-
-        // let start = product.indexOf('>') + 1;
-        //
-        // let end = product.indexOf('</td>');
-        //
-        // let prd = product.substring(start, end);
 
         let productToCart = productMap.get(+prd);
 
@@ -811,7 +811,7 @@ function checkMetr(productToCartMap, ob) {
 function saveCart(){
 
     let data=JSON.stringify(cartMap);
-console.log(data);
+
     let csrf =document.querySelector('#cart_csrf').value;
 
     let url="/order/add-cart";
@@ -842,7 +842,7 @@ console.log(data);
         }
         addCartToOrder.style.display = "none";
 
-      //  location.reload(); // перезагружаем страницу
+        location.reload(); // перезагружаем страницу
 
     } catch (error) {
         console.error('Ошибка:', error);
@@ -854,15 +854,7 @@ function controlElementSaveCart(){
 
     if(user_id){
 
-        if(dat_dispatch.value.length>0&&cartMap.length>0&&user_id.value.length>0){
-
-            save_cart.removeAttribute("disabled");
-        }else{
-
-            save_cart.setAttribute("disabled", "disabled");
-        }
-    }else{
-        if(cartMap.length>0){
+        if(dat_dispatch.value.length>0&&cartMap.length>0&&user_id.value.length>0&&titleSumm.textContent.length>15){
 
             save_cart.removeAttribute("disabled");
         }else{
@@ -871,3 +863,4 @@ function controlElementSaveCart(){
         }
     }
 }
+//===========================order.js ============

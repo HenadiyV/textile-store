@@ -11,6 +11,7 @@ import java.util.List;
  * textilewebproject_3  29/12/2021-8:52
  */
 public interface BasketProductRepository extends JpaRepository<BasketProduct,Long> {
+
     @Query("from BasketProduct bp where bp.basket.id =:id")
     List<BasketProduct> getBasketProductList(@Param("id")Long id);
 }

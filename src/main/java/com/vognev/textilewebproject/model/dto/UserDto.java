@@ -30,8 +30,13 @@ public class UserDto {
         this.active = active;
     }
 
-    public UserDto(Long id, String name, String username, String email, Boolean active,
-                   List<PhoneUserDto> phoneList, List<AddressUserDto> addressList,
+    public UserDto(Long id,
+                   String name,
+                   String username,
+                   String email,
+                   Boolean active,
+                   List<PhoneUserDto> phoneList,
+                   List<AddressUserDto> addressList,
                    List<PostOfficeUserDto> postOfficeList
     ) {
         this.id = id;

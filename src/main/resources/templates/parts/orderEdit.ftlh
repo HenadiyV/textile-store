@@ -1,25 +1,16 @@
 <#import "common.ftlh" as c>
 
 <@c.page>
-<#--<link rel="stylesheet" href="/static/js/node_modules/air-datepicker/air-datepicker.css" />-->
-
-    <#--<script src="/static/js/node_modules/air-datepicker/air-datepicker.js"></script>-->
-
 <div class="container">
-
 
     <a href="${url}">Повернутись</a>
     <div class="centr">
     <h4>Редагування замовлення</h4>
     </div>
     <div class="row">
-
         <div class="col-6">
             <label for="userL">Пошук користувачів</label><br/>
-            <input type="text" id="search_user" placeholder="Search user" class="input-with"/>
-        </div>
-
-        <div class="col-6 mt-4">
+            <input type="text" id="search_user" placeholder="Search user" />
             <select id="userL">
             <option>Список користувачів</option>
               <#list users as user>
@@ -27,34 +18,32 @@
               </#list>
         </select>
         </div>
+
+        <div class="col-6 mt-4">
+        </div>
     </div>
 
     <div class="row mt-4">
-        <div class="col-4 mt-2">
+        <div class="col-sm-4 mt-2">
              <label for="phon">Телефон</label><br/>
             <select id="phon" class="ordUpdForm">
 
                             <#if userN??>
-
                                 <#list userN.phones as phone>
                                 <option value="${phone.id}">${phone.phone}</option>
                                 </#list>
-
                             <#else>
                             <option value="${order.phone_id}"> ${order.phone}</option>
-
                             </#if>
             </select>
         </div>
 
-        <div class="col-4 mt-2">
-
+        <div class="col-sm-4 mt-2">
             <span >Нік: <#if userN??>  <b>${userN.name}</b><#else><b>${order.name}</b></#if></span> <br/>
            <span >Імя: <#if userN??> <b>${userN.username}</b><#else><b>${order.username}</b></#if></span>
-
         </div>
 
-        <div class="col-4 mt-2">
+        <div class="col-sm-4 mt-2">
             <label for="addr">Адресса</label><br/>
             <select id="addr">
                 <#if userN??>
@@ -75,7 +64,7 @@
 
     <div class="row mt-3">
 
-        <div class="col-4">
+        <div class="col-sm-4">
             <div class="mt-2">
                 <label for="dat_dispatch">Дата відправки</label><br/>
                 <input type="text" id="dat_dispatch"  class="input-with"/>
@@ -93,11 +82,10 @@
                         <option value="${order.postOffice_id}"> ${order.postOffice}</option>
                         </#if>
                 </select>
-
             </div>
     </div>
 
-        <div class="col-4">
+        <div class="col-sm-4">
 
             <div class="mt-2">
                 <label for="delivery">ТТН</label><br/>
@@ -118,7 +106,7 @@
                 </select><br/>
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-sm-4">
             <div class="mt-1">
             <label for="infoOr">Додаткова інформація</label><br/>
             <textarea id="infoOr" class="input-with" rows="4" cols="45"><#if order.info_order?has_content>${order.info_order}</#if></textarea>
@@ -165,7 +153,7 @@
 
             let status=request.status;
 
-            if (status ===200){//let userL=   document.querySelector("#userL");
+            if (status ===200){
 
                 userL.innerHTML='';
 
@@ -177,7 +165,7 @@
 
                     pt+='<option value='+data[i].id+'>'+data[i].name+' | '+data[i].username+'</option>'
                 }
-                userL.innerHTML=opt;//  userL.addEventListener("change",vv);
+                userL.innerHTML=opt;
             }
         }else{
 
@@ -196,7 +184,7 @@
 
         let status=request.status;
 
-        if (status ===200){//let userL=   document.querySelector("#userL");
+        if (status ===200){
 
             userL.innerHTML='';
 
@@ -208,7 +196,7 @@
 
                 opt+="<option  value="+data[i].id+">"+data[i].name+" | "+data[i].username+"</option>"
             }
-            userL.innerHTML=opt;// userL.addEventListener("change",vv);
+            userL.innerHTML=opt;
         }
     }
 

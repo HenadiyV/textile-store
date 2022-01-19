@@ -37,8 +37,10 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private PhoneService phoneService;
+
     @Autowired
     private AddressService addressService;
+
     @Autowired
     private PostOfficeService postOfficeService;
 
@@ -48,17 +50,24 @@ public class UserService implements UserDetailsService {
     @Value("${hostname}")
     private String hostname;
 
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+
         MyUser myUser=myUserRepository.findByUsername(username);
+
         if(myUser==null){
+
             throw new UsernameNotFoundException("User not found");
         }
         return myUser;
     }
 
+
     public boolean addUser(MyUser myUser){
+
         MyUser userFromDb = myUserRepository.findByUsername(myUser.getUsername());
+
         if (userFromDb != null) {
 
             return false;
@@ -67,20 +76,27 @@ public class UserService implements UserDetailsService {
         myUser.setRoles(Collections.singleton(Role.USER));
         myUser.setActivationCode(UUID.randomUUID().toString());
         myUser.setPassword(passwordEncoder.encode(myUser.getPassword()));
-        myUserRepository.save(myUser);
 
-        //sendUser(myUser);//может мешать антивирус и быть заблокированны поля  провайдером
+        save(myUser);
+
+        //sendUser(save(myUser));//может мешать антивирус и быть заблокированны поля  провайдером
         return true;
     }
 
+
+    public MyUser save(MyUser user){
+        return myUserRepository.save(user);
+    }
+
     //UserDto
-    public Map<String,String> addUserFromAdmin(MyUser userDto,
-                                               String info,
-                                               String phone,
-                                               String city,
-                                               String address,
-                                               String postCode,
-                                               String postOffice
+    public Map<String,String> addUserFromAdmin(
+            MyUser userDto,
+            String info,
+            String phone,
+            String city,
+            String address,
+            String postCode,
+            String postOffice
     ){
         MyUser myUser=new MyUser();
 
@@ -89,6 +105,7 @@ public class UserService implements UserDetailsService {
         Map<String,String> errorMessage= new HashMap<>();
 
         if(phone.length()>4){
+
             if (phoneService.getNumberPhone(phone) != null) {
 
                 errorMessage.put("phoneError","Номер вже існує в базі");
@@ -99,14 +116,17 @@ public class UserService implements UserDetailsService {
             errorMessage.put("usernameError","Такий логін вже існує");
         }
         if(userDto.getEmail().length()>3) {
+
             if (myUserRepository.findByEmail(userDto.getEmail()) != null) {
 
                 errorMessage.put("emailError", "Такий email вже існує");
 
             }else{
+
                 tempEmail.append(userDto.getEmail());
             }
         }else{
+
             tempEmail.append(colUsers()+1);
             tempEmail.append("@");
             tempEmail.append(colUsers()+1);
@@ -114,7 +134,7 @@ public class UserService implements UserDetailsService {
         }
         if(errorMessage.size()==0){
 
-            String pass="T3N2v@"+String.valueOf(colUsers()+1);
+            String pass=userDto.getUsername()+String.valueOf(colUsers()+1);//"T3N2v@"
 
             myUser.setName(userDto.getName());
             myUser.setUsername(userDto.getUsername());
@@ -139,6 +159,7 @@ public class UserService implements UserDetailsService {
         return errorMessage;
     }
 
+
     private void sendUser(MyUser myUser) {
 
         if(!ObjectUtils.isEmpty(myUser.getEmail())){
@@ -155,6 +176,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
+
     public boolean activateUser(String code) {
 
         MyUser myUser = myUserRepository.findByActivationCode(code);
@@ -167,6 +189,7 @@ public class UserService implements UserDetailsService {
         myUserRepository.save(myUser);
         return true;
     }
+
 
     public void saveUser(MyUser user, String username, Map<String,String> form) {
 
@@ -216,7 +239,6 @@ public class UserService implements UserDetailsService {
         if(isEmailChanged){
             sendUser(user);
         }
-
     }
 
 
@@ -231,6 +253,7 @@ public class UserService implements UserDetailsService {
 
 
     public UserDto getUserToOrder(Long id){
+
         MyUser myUser= myUserRepository.getById(id);
 
         List<PhoneUser> phoneUsers= new ArrayList<>(myUser.getPhones());
@@ -238,6 +261,7 @@ public class UserService implements UserDetailsService {
         List<PhoneUserDto> phoneUserToOrderDtoList=new ArrayList<>();
 
         for(PhoneUser phoneUser:phoneUsers){
+
             PhoneUserDto phoneUserToOrderDto =new PhoneUserDto(phoneUser.getId(),phoneUser.getPhone());
 
             phoneUserToOrderDtoList.add(phoneUserToOrderDto);
@@ -248,8 +272,13 @@ public class UserService implements UserDetailsService {
         List<AddressUserDto>addressToOrderDtoList = new ArrayList<>();
 
         for(AddressUser addressUser:addressUserList){
-            AddressUserDto addressToOrderDto= new AddressUserDto(addressUser.getId(),addressUser.getCity(),
-                    addressUser.getPostCode(),addressUser.getPostCode());
+
+            AddressUserDto addressToOrderDto= new AddressUserDto(
+                    addressUser.getId(),
+                    addressUser.getCity(),
+                    addressUser.getAddress(),
+                    addressUser.getPostCode(),
+                    addressUser.isActive());
 
             addressToOrderDtoList.add(addressToOrderDto);
         }
@@ -259,7 +288,9 @@ public class UserService implements UserDetailsService {
         List<PostOfficeUserDto> postOfficeToOrderDtoList = new ArrayList<>();
 
         for(PostOfficeUser postOfficeUser:postOfficeUserList){
-            PostOfficeUserDto postOfficeToOrderDto = new PostOfficeUserDto(postOfficeUser.getId(),
+
+            PostOfficeUserDto postOfficeToOrderDto = new PostOfficeUserDto(
+                    postOfficeUser.getId(),
                     postOfficeUser.getPostOffice());
 
             postOfficeToOrderDtoList.add(postOfficeToOrderDto);

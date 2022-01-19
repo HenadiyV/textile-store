@@ -39,6 +39,9 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/user/profile">Профіль </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/order/user/${user.id}">Замовлення</a>
+                </li>
              </#if>
 
             </ul>
@@ -46,10 +49,10 @@
             <div class="havbar-text me-3">
                 <#if cookie??>
                      <a class="btn btn-primary me-1" onclick="showBasket()" href="javascript:void(0)"name="show-basket">Кошик</a>
-           <#--<#else><button onclick="writeCookies()" id="write_token">writeToken</button>-->
                 </#if>
                <#if user??>
                        ${name}
+               <input type="hidden" id="__user_id" value="${user.id}"/>
                    <#else>
                        <a class="btn btn-primary me-1" href="/login" >Вхід</a>
                                 <a class="btn btn-primary me-1" href="/registration" >Регістрація</a>
