@@ -1,11 +1,15 @@
 package com.vognev.textilewebproject.service;
 
-import com.vognev.textilewebproject.model.Cart;
+
+import com.vognev.textilewebproject.dto.ProductDto;
+import com.vognev.textilewebproject.dto.ProductStatistic;
 import com.vognev.textilewebproject.model.ImageProduct;
 import com.vognev.textilewebproject.model.Product;
-import com.vognev.textilewebproject.model.dto.ProductDto;
+import com.vognev.textilewebproject.model.Tag;
 import com.vognev.textilewebproject.repository.ImageProductRepository;
 import com.vognev.textilewebproject.repository.ProductRepository;
+import com.vognev.textilewebproject.util.Constants;
+import org.decimal4j.util.DoubleRounder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -17,9 +21,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.text.DecimalFormat;
+import java.util.*;
 
 /**
  * textilewebproject_2  13/10/2021-19:55
@@ -41,10 +44,15 @@ public class ProductService {
     @Autowired
     private ImageProductService imageProductService;
 
+    @Autowired
+    private TagService tagService;
+
 
     @Value("${upload.path}")
     private String uploadPath;
 
+    private static int POSITION=0;
+    private static int COUNT_PRODUCT=0;
 
     public Page<Product> getProductListAllPageable(Pageable pageable) {
 
@@ -87,8 +95,11 @@ public class ProductService {
    }
 
 
-   Product getProductById(Long id){
-        return productRepository.getById(id);
+   public Product getProductById(Long id){
+        Product product=productRepository.getById(id);
+       System.out.println(product.getPurchasePrice());
+       System.out.println(product.getPurchasePriceDollar());
+        return product;
    }
 
 
@@ -158,10 +169,36 @@ public class ProductService {
     }
 
 
-    public List<ProductDto> getProductDtoList(){
+    public List<ProductDto> getProductDtoList(int positionList){
+        POSITION=positionList;
+        if(COUNT_PRODUCT==0){
+            COUNT_PRODUCT=productRepository.getCountProducts();
+        }
+        List<Product> productList = new ArrayList<>();
 
-        List<Product> productList= productRepository.findAll();
+               if(POSITION==0){
 
+         productList= productRepository.findAll().subList(POSITION,POSITION+Constants.LIST_SIZE);
+                   return getJsonProducts(productList);
+        }else if((POSITION+Constants.LIST_SIZE)<COUNT_PRODUCT){
+
+                   productList= productRepository.findAll().subList(POSITION,POSITION+Constants.LIST_SIZE);
+
+                   return getJsonProducts(productList);
+               }else if(COUNT_PRODUCT-POSITION<Constants.LIST_SIZE){
+
+                   productList= productRepository.findAll().subList(POSITION,COUNT_PRODUCT);
+                   POSITION=0;
+
+                   return getJsonProducts(productList);
+               }else{
+                   POSITION=0;
+                   return getJsonProducts(productRepository.findAll());
+               }
+
+    }
+
+    private List<ProductDto> getJsonProducts(List<Product> productList){
         List<ProductDto>productDtoList= new ArrayList<>();
 
         for(Product product : productList){
@@ -171,14 +208,29 @@ public class ProductService {
         return productDtoList;
     }
 
+    public void addProduct(Product product,MultipartFile[] files,String tagStr){
 
-    public void addProduct(Product product,MultipartFile[] files){
+        String[] tags=tagStr.split(",");
 
         Product productFromDb = productRepository.save(product);
 
-            productFromDb.setImageProducts(saveImage(productFromDb,files));
+        if(!tagStr.isEmpty()){
 
-            productRepository.save(productFromDb);
+        Set<Tag> tagSet = new HashSet<>();
+
+        for(String st:tags){
+
+            Tag tag =tagService.getById(Integer.parseInt(st));
+
+            tagSet.add(tag);
+        }
+        productFromDb.setTags(tagSet);
+        }
+        if(files!=null) {
+
+            productFromDb.setImageProducts(saveImage(productFromDb, files));
+        }
+          productRepository.save(productFromDb);
     }
 
 
@@ -200,7 +252,9 @@ public class ProductService {
                 product.getDat(),
                 product.getSelling_size(),
                 product.getInfo(),
-                img
+                img,
+                POSITION
+
         );
         //BeanUtils.copyProperties(product,productDto,"category","imageProducts");
         productDto.setCategory_id( product.getCategory().getId());
@@ -354,7 +408,7 @@ public class ProductService {
                     if(resultFilename!= null) {
 
                         imageProduct.setImgProduct(resultFilename);
-                        imageProduct.setAmount(amount);
+
                         imageProduct.setInfo("");
                         imageProduct.setShowcase(showcase);
                         showcase = false;
@@ -370,7 +424,7 @@ public class ProductService {
                 }
             }else{
 
-              ImageProduct imageProduct = new ImageProduct("noimage.png",true," ",0);
+              ImageProduct imageProduct = new ImageProduct("noimage.png",true," ");
 
                 imageProductService.saveImageProduct(imageProduct);
             }
@@ -435,15 +489,37 @@ public class ProductService {
         return productOpt.orElse(null);
     }
 
-//    public void corectSizeSellingProduct(ProductDto[] productDtos) {
-//
-//        for(ProductDto pr:productDtos){
-//           // double sizeTemp= getProductById(pr.getId()).getSelling_size();
-//            //updateProductSallingSize(pr.getId(), sizeTemp, false);
-//            //updateProductSallingSize(pr.getId(), pr.getSelling_size(), true);
-//            System.out.println(pr.getId());
-//            //
-//            System.out.println(pr.getSelling_size());
-//        }
-//    }
+
+    public Page<Product> getPagerAllProduct(Pageable pageable) {
+        return productRepository.findAll(pageable);
+    }
+
+
+    public Page<Product> getPagerSearchProduct(String name, Pageable pageable) {
+        return productRepository.findByName(name,pageable);
+    }
+
+
+    public Double sellingSumm() {
+        return productRepository.getSelling();
+    }
+
+
+    public Double getPurchaseSumm() {
+        return productRepository.getPurchase();
+    }
+
+
+    public List<ProductStatistic> statisticProduct() {
+
+        return productRepository.getStatisticProduct();
+    }
+
+
+    public List<Product> getListProduct(){
+
+        return productRepository.getListProduct();
+
+    }
+
 }

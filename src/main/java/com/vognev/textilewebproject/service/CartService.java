@@ -1,19 +1,16 @@
 package com.vognev.textilewebproject.service;
 
+import com.vognev.textilewebproject.dto.ProductStatistic;
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.CartDto;
-import com.vognev.textilewebproject.model.util.OrderSumm;
-import com.vognev.textilewebproject.model.dto.UserProductDto;
+import com.vognev.textilewebproject.dto.CartDto;
+import com.vognev.textilewebproject.util.OrderSumm;
+import com.vognev.textilewebproject.dto.UserProductDto;
 import com.vognev.textilewebproject.repository.CartDeletedRepository;
 import com.vognev.textilewebproject.repository.CartRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.zip.ZipFile;
+import java.util.*;
 
 /**
  * textilewebproject_2  24/10/2021-19:11
@@ -89,7 +86,7 @@ public class CartService {
                         crt.getSiz(),
                         crt.getDiscountPrice(),
                         crt.getInfoCart(),
-                        order.getDat_create(),
+                        order.getCreat(),
                         order);
 
                save(cart);
@@ -131,8 +128,8 @@ public class CartService {
             summ+=cr.getSiz()*cr.getSalePrice()-cr.getDiscount_price();
         }
 
-        OrderSumm.setOrderSumm(summ);
-
+        OrderSumm.setOrderSumm(summ);//Collections.reverse(cartDtos);
+//.sort()
         return cartDtos;
     }
 
@@ -266,15 +263,30 @@ public class CartService {
 
             Order order=crt.getOrder();
 
-            String address=order.getAddressUser().getCity()+" | "+
-                    order.getAddressUser().getAddress()+" | "+order.getAddressUser().getPostCode();
+            StringBuilder address= new StringBuilder();
+
+            if(!order.getAddressUser().getCity().isEmpty()){
+                address.append(order.getAddressUser().getCity());
+            }
+            if(address.length()>0&&!order.getAddressUser().getAddress().isEmpty()){
+                address.append(" | ");
+                address.append(order.getAddressUser().getAddress());
+            }else{
+                address.append(order.getAddressUser().getAddress());
+            }
+            if(address.length()>0&&!order.getAddressUser().getPostCode().isEmpty()){
+                address.append(" інд: ");
+                address.append(order.getAddressUser().getPostCode());
+            }else{
+                address.append(order.getAddressUser().getPostCode());
+            }
 
             UserProductDto userProductDto = new UserProductDto(
                     order.getUser().getId(),
                     order.getUser().getName(),
                     order.getUser().getUsername(),
                     order.getPhoneUser().getPhone(),
-                    address,order.getPostOfficeUser().getPostOffice(),
+                    address.toString(),order.getPostOfficeUser().getPostOffice(),
                     crt.getId(),
                     product.getCategory().getName(),
                     crt.getProduct_id(),
@@ -315,6 +327,47 @@ public class CartService {
             ex.printStackTrace();
             return null;
         }
+    }
+
+    public List<ProductStatistic> statisticCart() {
+        List<ProductStatistic> cartStatistics = cartRepository.getStatisticCart();
+//        ProductStatistic prst = new ProductStatistic();
+//        List<ProductStatistic> productStatisticList = new ArrayList<>();
+//        /*Date dat, double sale_price, double size_selling, double discount_price*/
+//
+//        double sold=0.0;
+//        double sale_price=0.0;
+//        double size_selling=0.0;
+//        double discount_price=0.0;
+//
+//        for(ProductStatistic prs:cartStatistics){
+//            if(prst.getDat()==null){
+//                prst=prs;
+//            }
+//            if(prst.getDat().equals(prs.getDat())){
+//                sale_price+=prs.getPurchese();
+//                discount_price+=prs.getDiscount_price();
+//                size_selling+=prs.getSize_selling();
+//                sold+=sale_price*size_selling-discount_price;
+//            }
+//            if(!prst.getDat().equals(prs.getDat())){
+//                if(sold>0){
+//                    prst.setSale_price(sale_price);
+//                    prst.setDiscount_price(discount_price);
+//                    prst.setSize_selling(size_selling);
+//                    prst.setSold(sold);
+//
+//                    productStatisticList.add(prst);
+//                    sale_price=0.0;
+//                    discount_price=0.0;
+//                    size_selling=0.0;
+//                    sold=0.0;
+//                    prst=prs;
+//                }
+//            }
+//        }
+//        return productStatisticList;
+return cartStatistics;
     }
 }
 //====================CartService  ===============

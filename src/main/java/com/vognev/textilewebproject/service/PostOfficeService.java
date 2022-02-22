@@ -2,14 +2,14 @@ package com.vognev.textilewebproject.service;
 
 import com.vognev.textilewebproject.model.MyUser;
 import com.vognev.textilewebproject.model.PostOfficeUser;
-import com.vognev.textilewebproject.model.dto.PostOfficeUserDto;
+import com.vognev.textilewebproject.dto.PostOfficeUserDto;
 import com.vognev.textilewebproject.repository.PostOfficeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.zip.ZipFile;
+import java.util.Set;
 
 /**
  * textilewebproject_2  23/10/2021-7:04
@@ -86,11 +86,20 @@ public class PostOfficeService {
 
     public void addPostOfficeFromUser(String postOffice, String info, boolean active, MyUser user) {
 
-        System.out.println(postOffice);
-        System.out.println(info);
-        System.out.println(active);
-        System.out.println(user.getId());
-        System.out.println(user.getName());
+        PostOfficeUser postOfficeUser = new PostOfficeUser(postOffice,active,user,info);
+
+        if(active){
+
+            List<PostOfficeUser> postOfficeUserSet = postOfficeRepository.getPostOfficeUserListByUserId(user.getId());
+
+            for(PostOfficeUser po: postOfficeUserSet){
+
+                po.setActive(false);
+
+                save(po);
+            }
+        }
+        save(postOfficeUser);
     }
 
 
@@ -101,5 +110,25 @@ public class PostOfficeService {
                 postOfficeUser.getPostOffice(),
                 postOfficeUser.getInfo(),
                 postOfficeUser.isActive());
+    }
+
+    public void updatePostOffice(Long id, String postOffice, String info, boolean active) {
+
+        PostOfficeUser postOfficeUser = getPostOfficeById(id);
+
+        postOfficeUser.setPostOffice(postOffice);
+        postOfficeUser.setInfo(info);
+        postOfficeUser.setActive(active);
+
+        save(postOfficeUser);
+    }
+
+    public List<PostOfficeUserDto> getListPostOfficeDtoByListPostOffice(Set<PostOfficeUser> postOfficeUsers) {
+        List<PostOfficeUserDto> postOfficeUserDtos = new ArrayList<>();
+        for(PostOfficeUser po:postOfficeUsers){
+            PostOfficeUserDto pf =  new PostOfficeUserDto(po.getId(),po.getPostOffice(),po.getInfo(),po.isActive());
+            postOfficeUserDtos.add(pf);
+        }
+        return postOfficeUserDtos;
     }
 }

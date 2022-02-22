@@ -1,14 +1,12 @@
 package com.vognev.textilewebproject.controller;
 
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.*;
-import com.vognev.textilewebproject.model.util.Constants;
-import com.vognev.textilewebproject.model.util.MyCookies;
+import com.vognev.textilewebproject.dto.*;
+import com.vognev.textilewebproject.util.Constants;
+import com.vognev.textilewebproject.util.MyCookies;
 import com.vognev.textilewebproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
@@ -38,6 +36,9 @@ public class RestController {
     private PostOfficeService postOfficeService;
 
     @Autowired
+    private OrderService orderService;
+
+    @Autowired
     private CartService cartService;
 
     @Autowired
@@ -60,7 +61,6 @@ public class RestController {
     }
 
 
-
    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     @GetMapping("user/{id}")
     public UserDto getUserOrder(@PathVariable(name = "id") Long id){
@@ -69,19 +69,25 @@ public class RestController {
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/us-search/{us}")
+    @GetMapping("/search-user/{name}")
     public List<UserDto> searchUser(
-            @PathVariable String us
+            @PathVariable String name
     ){
+
+     return userService.searchUser(name);
+    }
+
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value="/user-list/{direction}", method= RequestMethod.GET )
+    public List<UserDto> listUser(
+            @PathVariable Integer direction
+    ){
+
         List<UserDto> userList=new ArrayList<>();
 
-        if(!us.isEmpty()){
+            userList= userService.scrollMyUserList(direction);
 
-            userList= userService.searchUser(us);
-        }else{
-
-            userList= userService.listUserDto();
-        }
      return userList;
     }
 
@@ -97,11 +103,23 @@ public class RestController {
      return userList;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value="/userList/", method= RequestMethod.GET )
+    public List<UserDto> getListUserDto(@PageableDefault(size = 20) Pageable pageable
+){
 
-    @GetMapping("/product-list")
-    public List<ProductDto> productDtoList( ){
+        List<UserDto> userList=new ArrayList<>();
 
-        List<ProductDto> productDtoList=productService.getProductDtoList();
+            userList= userService.listUserLimit(pageable);//userService.listUserDto();
+
+     return userList;
+    }
+
+
+    @GetMapping("/product-list/{positionList}")
+    public List<ProductDto> productDtoList( @PathVariable int positionList){
+
+        List<ProductDto> productDtoList=productService.getProductDtoList(positionList);
 
        return productDtoList;
     }
@@ -118,7 +136,7 @@ public class RestController {
 
         }else {
 
-          productDtoList=productService.getProductDtoList();
+          productDtoList=productService.getProductDtoList(0);
         }
 
        return productDtoList;
@@ -136,7 +154,7 @@ public class RestController {
             productDtoList = productService.searchProduct(name);
         }else {
 
-          productDtoList=productService.getProductDtoList();
+          productDtoList=productService.getProductDtoList(0);
         }
        return productDtoList;
     }
@@ -147,7 +165,7 @@ public class RestController {
 
         List<ProductDto> productDtoList=new ArrayList<>();
 
-          productDtoList=productService.getProductDtoList();
+          productDtoList=productService.getProductDtoList(0);
 
        return productDtoList;
     }
@@ -254,6 +272,19 @@ public class RestController {
     }
 
 
+    @PostMapping("/cart-update")
+    public CartDto updateCart(
+            @RequestBody      CartDto cartDto
+    ){
+        Cart cart= cartService.getById(cartDto.getCartId());
+        cart.setDiscount_price(cartDto.getDiscountPrice());
+        cart.setSiz(cartDto.getSiz());
+        cart.setInfo(cartDto.getInfoCart());
+cartService.save(cart);
+        return cartDto;
+    }
+
+
     @RequestMapping(value="/basket", method= RequestMethod.POST,
             produces = "application/json",
             consumes="application/json"
@@ -310,6 +341,7 @@ public class RestController {
         return true;
     }
 
+
     @GetMapping("user-address/{id}")
     public AddressUserDto getAddressUser(
             @PathVariable(name="id")AddressUser addressUser
@@ -333,6 +365,22 @@ public class RestController {
         return postOfficeService.getPoastOfficeUserDtoByPostOfficeUser(postOfficeUser) ;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("statistic-product")
+    public List<ProductStatistic> getProductStatistic(
+
+    ){
+        return productService.statisticProduct() ;
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("statistic-cart")
+    public List<ProductStatistic> getCartStatistic(
+
+    ){
+        return cartService.statisticCart() ;
+    }
+
 
     @RequestMapping(value="/edit-selling-size", method= RequestMethod.POST ,
             headers = "Accept=*/*",
@@ -346,3 +394,55 @@ public class RestController {
     }
 
 }
+//==================RestCotroller ===============
+
+//            @PathVariable Long cartId,
+//            @PathVariable Double siz,
+//            @PathVariable Double discountPrice,
+//            @PathVariable String infoCart
+// (required = false)List<UserDto> userList=new ArrayList<>();
+//        System.out.println("name "+name);
+//        System.out.println("name1 "+name.isEmpty());
+
+
+// userList= userService.searchUser(name);
+// if(!name.isEmpty()){}else{
+
+//userList= userService.listUserDto();
+//}userList
+//    @PreAuthorize("hasAuthority('ADMIN')")
+//    @RequestMapping(value="/add-cart-to-order", method= RequestMethod.POST
+//    )
+//    public OrderDto addCartToOrder(
+//            @RequestParam  Long orderId,
+//            @RequestParam  Long productId,
+//            @RequestParam String productName,
+//            @RequestParam Double sellingPrice,
+//            @RequestParam Double sizeProduct,
+//            @RequestParam Double balance,
+//            @RequestParam Double siz,
+//            @RequestParam Double summ,
+//            @RequestParam Double discountPrice,
+//            @RequestParam String infoCart,
+//            @RequestParam String img
+//
+//    ){
+//
+////       productId: 164
+////orderId: 18
+////productName: Америк. штапель креш марсала
+////sellingPrice: 88
+////sizeProduct: 33
+////balance: 18.5
+////siz: 12
+////summ: 1046
+////discountPrice: 10
+////infoCart:
+////img: noimage.png
+//// cartService.addCartToOrder(cartValue);
+////
+////        model.addAttribute("orderList",orderService.orderAll());
+////        model.addAttribute("products", productService.getProductDtoList(0));
+//        String url="edit/"+18;
+//        return orderService.getOrderByIdFromOrderDto(orderId);
+//    }

@@ -2,7 +2,7 @@ package com.vognev.textilewebproject.service;
 
 import com.vognev.textilewebproject.model.Cart;
 import com.vognev.textilewebproject.model.Order;
-import com.vognev.textilewebproject.model.dto.CartDto;
+import com.vognev.textilewebproject.dto.CartDto;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * textile-store  11/01/2022-10:13

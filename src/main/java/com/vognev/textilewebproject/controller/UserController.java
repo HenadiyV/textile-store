@@ -1,35 +1,27 @@
 package com.vognev.textilewebproject.controller;
 
 import com.vognev.textilewebproject.model.MyUser;
-import com.vognev.textilewebproject.model.Role;
-import com.vognev.textilewebproject.model.dto.AddressUserDto;
-import com.vognev.textilewebproject.model.dto.PhoneUserDto;
-import com.vognev.textilewebproject.model.dto.PostOfficeUserDto;
-import com.vognev.textilewebproject.repository.MyUserRepository;
 import com.vognev.textilewebproject.service.AddressService;
 import com.vognev.textilewebproject.service.PhoneService;
 import com.vognev.textilewebproject.service.PostOfficeService;
 import com.vognev.textilewebproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * textilewebproject  18/09/2021-20:13
  */
 @Controller
+//@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
 @RequestMapping("/user")
-
+//@Transactional
 public class UserController {
     
     @Autowired
@@ -46,7 +38,7 @@ public class UserController {
             Model model,
             @AuthenticationPrincipal MyUser user
     ){
-        model.addAttribute("user",user);
+        model.addAttribute("user",userService.getUser(user.getId()));
        // model.addAttribute("username",user.getUsername());
         //model.addAttribute("email",user.getEmail());
         model.addAttribute("addresess",addressService.getAddressByUserId(user.getId()));
@@ -66,19 +58,52 @@ public class UserController {
             @RequestParam String confirmPassword,
             @RequestParam String email,
             @RequestParam String info,
-
             Model model
     ){
-        boolean isConfirm = ObjectUtils.isEmpty(confirmPassword);
 
-        //userService.updateProfile(user,password,email);
+MyUser user = userService.getUser(myUser.getId());
+        boolean isConfirmUsername = ObjectUtils.isEmpty(username);
+
+        if(isConfirmUsername){
+
+            model.addAttribute("usernameError","Поле не може бути пустим!");
+            model.addAttribute("user",user);
+            model.addAttribute("addresess",addressService.getAddressByUserId(user.getId()));
+            model.addAttribute("phones",phoneService.getPhoneUserListFromUserId(user.getId()));
+            model.addAttribute("postOffices",postOfficeService.getPostOfficeUserListFromUserId(user.getId()));
+            return "/profile";
+        }
+
+        if(!username.equals(user.getUsername())&&userService.searchUser(username).size()>0){
+            model.addAttribute("usernameError","Нік зайнятий!");//Задайте Нік
+            model.addAttribute("user",user);
+            model.addAttribute("addresess",addressService.getAddressByUserId(user.getId()));
+            model.addAttribute("phones",phoneService.getPhoneUserListFromUserId(user.getId()));
+            model.addAttribute("postOffices",postOfficeService.getPostOfficeUserListFromUserId(user.getId()));
+            return "/profile";
+        }
+
+        boolean isEmail = ObjectUtils.isEmpty(email);
+       // if(!isEmail&&!email.equals(user.getEmail())){}
+        if(!isEmail&&!email.equals(user.getEmail()) && userService.searchEmail(email)!=null){
+            model.addAttribute("emailError","Email зайнятий!");
+            model.addAttribute("user",user);
+            model.addAttribute("addresess",addressService.getAddressByUserId(user.getId()));
+            model.addAttribute("phones",phoneService.getPhoneUserListFromUserId(user.getId()));
+            model.addAttribute("postOffices",postOfficeService.getPostOfficeUserListFromUserId(user.getId()));
+            return "/profile";
+        }
+       userService.updateProfile(username,name,password,email,info,user );
 
         return"redirect:/user/profile";
     }
 
+
     @PostMapping("profile-address")
-    public String updateAddress(
+    public String addAddress(
             @AuthenticationPrincipal MyUser user,
+            @RequestParam String region,
+            @RequestParam String district,
             @RequestParam String city,
             @RequestParam String address,
             @RequestParam String postCode,
@@ -86,21 +111,24 @@ public class UserController {
             @RequestParam boolean active
 
     ){
-        //userService.updateProfile(city, address, postCode, info, active);
-        addressService.addAddressFromUser(city,address,postCode,info,active,user);
+        addressService.addAddressFromUser(region,district,city,address,postCode,info,active,user);
+
         return"redirect:/user/profile";
     }
 
     @PostMapping("update-address")
     public String updateAddress(
             @RequestParam Long id,
+            @RequestParam String region,
+            @RequestParam String district,
             @RequestParam String city,
             @RequestParam String address,
             @RequestParam String postCode,
             @RequestParam String info,
-            @RequestParam boolean active
+            @RequestParam(name="active", required = false) boolean active
             ){
-        System.out.println(address);
+        addressService.updateAddress(id,region,district,city,address,postCode,info,active);
+
         return"redirect:/user/profile";
     }
 
@@ -110,27 +138,31 @@ public class UserController {
             @RequestParam String phone,
             @RequestParam String info,
             @RequestParam boolean active
+
     ){
-        //userService.updateProfile(user,phone,info,active);
+        if(phoneService.getNumberPhone(phone)==null){
 
         phoneService.addPhoneFromUser(phone,info,active,user);
-        return"redirect:/user/profile";
+
+        }
+
+        return"redirect:/user/profile";///
     }
+
 
     @PostMapping("/update-phone")
     public String updatePhone(
             @RequestParam("id")Long id,
             @RequestParam("phone")String phone,
             @RequestParam("info")String info,
-            @RequestParam("active")boolean active
+            @RequestParam(name="active", required = false)boolean active
             ){
-        /*@RequestBody phone
-active
-info
-id*/
-        System.out.println(phone);
+
+        phoneService.updateProne(id,phone,info,active);
+
         return"redirect:/user/profile";
     }
+
 
     @PostMapping("profile-postOffice")
     public String addPostOfficeToUser(
@@ -139,24 +171,21 @@ id*/
             @RequestParam String info,
             @RequestParam boolean active
     ){
-        //userService.updateProfile(user,postOffice,info,active);
-
         postOfficeService.addPostOfficeFromUser(postOffice,info,active,user);
+
         return"redirect:/user/profile";
     }
 
+
     @PostMapping("/update-postOffice")
     public String updatePostOffice(
-           @RequestParam long id,
+           @RequestParam Long id,
            @RequestParam String postOffice,
            @RequestParam String info,
-           @RequestParam boolean active
+           @RequestParam(name="active", required = false) boolean active
             ){
-        /*postOffice
-active
-info
-id*/
-        System.out.println(postOffice);
+        postOfficeService.updatePostOffice(id,postOffice,info,active);
+
         return"redirect:/user/profile";
     }
 }

@@ -224,7 +224,7 @@ function addImage(act,id) {
     // вызов переопределения клика
     open.addEventListener('click', triggerInput);
 
-    if (act) {
+    if (act.indexOf("add-img")>-1) {
         el = createForm(act, 'post','multipart/form-data');
         el.appendChild(open);
 

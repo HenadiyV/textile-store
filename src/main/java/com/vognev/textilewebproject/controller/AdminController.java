@@ -1,23 +1,17 @@
 package com.vognev.textilewebproject.controller;
 
+
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.AddressUserDto;
-import com.vognev.textilewebproject.model.dto.PhoneUserDto;
-import com.vognev.textilewebproject.model.dto.PostOfficeUserDto;
-import com.vognev.textilewebproject.model.dto.UserDto;
 import com.vognev.textilewebproject.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
-
+import java.util.*;
 
 
 /**
@@ -45,12 +39,17 @@ public class AdminController {
     @Autowired
     private PostOfficeService postOfficeService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping()
     public String adminPage(Model model){
 
         model.addAttribute("col_product",productService.colProduct());
         model.addAttribute("col_user",userService.colUsers());
+        model.addAttribute("sellingSumm",productService.sellingSumm());
+        model.addAttribute("purchaseSumm",productService.getPurchaseSumm());
+
 
         return "admin";
     }
@@ -58,7 +57,7 @@ public class AdminController {
     @GetMapping("/user")
     public String userList( Model model){
 
-        model.addAttribute("users",userService.findAll());
+        model.addAttribute("users", userService.partMyUserList());
 
         return "admin-user";
     }
@@ -90,13 +89,15 @@ public class AdminController {
             @Valid MyUser user,
             @RequestParam(name="info", required=false,defaultValue = " ")String info,
             @RequestParam(name="phone", required=false,defaultValue = " ")String phone,
+            @RequestParam String region,
+            @RequestParam String district ,
             @RequestParam(name="city", required=false,defaultValue = " ")String city,
             @RequestParam(name="address", required=false,defaultValue = " ")String address,
             @RequestParam(name="postCode", required=false,defaultValue = " ")String postCode,
             @RequestParam(name="postOffice", required=false,defaultValue = " ")String postOffice,
             Model model
     ){
-        Map<String,String> errorM= userService.addUserFromAdmin(user,info,phone,city,address,postCode,postOffice);
+        Map<String,String> errorM= userService.addUserFromAdmin(user,info,phone,region,district,city,address,postCode,postOffice);
 
         if(errorM.size()==0) {
             model.addAttribute("user", null);
@@ -105,6 +106,8 @@ public class AdminController {
             model.addAttribute("user", user);
             model.addAttribute("userIsPresent", "User is present here ");
             model.addAttribute("phone", phone);
+            model.addAttribute("region", region);
+            model.addAttribute("district", district);
             model.addAttribute("city", city);
             model.addAttribute("address", address);
             model.addAttribute("postCode", postCode);
@@ -199,4 +202,5 @@ public class AdminController {
 
         return "admin-user";
     }
+
 }

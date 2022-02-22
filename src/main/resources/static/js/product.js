@@ -42,7 +42,7 @@ if (inpSize) {
         }
         let summ = (+inpPrice.value * +this.value);
 
-        place_summ.textContent = "Сумма : " + (+inpPrice.value * +this.value);
+        place_summ.textContent = "Сумма : " + (+inpPrice.value * +this.value).toFixed(2);
 
         if(img){
 
@@ -124,6 +124,7 @@ window.onload = function () {
         write_token.style.display = 'block';
         }
     }
+
 };
 
 
@@ -612,4 +613,95 @@ function test_user(){
         myModalBasket.style.display = "block";
     }
 }
+
+let doll;
+let purchasePrice =document.getElementById("purchasePrice");
+const inpDollar=document.getElementById("dollar");
+const inpHrivna=document.getElementById("hrivna");
+
+// if(inpDollar){
+//     inpDollar.addEventListener("change", function(){
+//
+//         let dl=this.value;
+//
+//         if(dl>0){
+//             //inpHrivna.setAttribute('readonly',"readonly");
+//             let dd=(dl*doll[0].sale).toFixed(2);
+//            inpHrivna.value=dd;
+//         }else{
+//            // inpHrivna.removeAttribute('readonly');
+//             inpHrivna.value=0;
+//         }
+//         //console.log(dl);
+//        // purchasePrice.value=(dl*doll[0].sale).toFixed(2);
+// //
+//        // console.log(doll[0].sale);
+//     });
+//     //
+// }
+
+ // if(inpHrivna){
+ //     inpHrivna.addEventListener("change", function(){
+ //         let hr=this.value;
+ //        // console.log(hr);
+ //         if(hr>0){
+ //
+ //            // inpDollar.setAttribute('readonly',"readonly");
+ //             let hh=(hr/doll[0].sale).toFixed(2);
+ //             inpDollar.value=hh;//.replace(',','.')
+ //         }else{
+ //            // inpDollar.removeAttribute('readonly');
+ //             inpDollar.value=0;
+ //         }
+ //        // purchasePrice.value=hr;
+ //     });
+ // }
+
+function getCurency(){
+    let url = "https://api.privatbank.ua/p24api/pubinfo?json&exchange&coursid=5";
+    let status = function (response) {
+        if (response.status !== 200) {
+            return Promise.reject(new Error(response.statusText))
+        }
+        return Promise.resolve(response)
+    };
+    let json = function (response) {
+        return response.json()
+    };
+
+    fetch(url, {
+        method: "Get",
+
+        headers: {
+
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+        .then(status)
+        .then(json)
+        .then( data=>{doll=data})
+        .catch(function (error) {
+            console.log('error', error)
+        })
+}
+getCurency();
+//console.log(doll);
 //=========== product.js==============
+// if(purchasePrice){
+//     purchasePrice.addEventListener("input",()=>{
+//         //console.log(doll);
+//         //console.log(doll[0].sale);&&doll[0].sale!=='undefined'
+//         if(chekcedDollar){
+//
+//             let tempValue=+purchasePrice.value;
+//             let tempSalle=doll[0].sale;
+//             console.log(tempValue);
+//             console.log(tempSalle);
+//             purchasePrice.value=(tempValue*tempSalle).toFixed(2);
+//
+//         }else{
+//             console.log(purchasePrice.value);
+//         }
+//     })
+//
+// }

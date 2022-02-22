@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.Valid;
 import java.util.Map;
@@ -73,6 +74,7 @@ public class CategoryController {
     @PostMapping("/category/{category}")
     public String updateCategory(
             @Valid Category category,
+            @RequestParam String name,
             BindingResult bindingResult,
             Model model
     ){
@@ -83,10 +85,14 @@ public class CategoryController {
             model.mergeAttributes(errorsMap);
             model.addAttribute("category", category);
         } else {
+            if(!name.isEmpty()) {
+                category.setName(name);
+                categoryService.save(category);
+            }
 
             model.addAttribute("category", null);
 
-            categoryService.save(category);
+
         }
         model.addAttribute("categoryList", categoryService.findAll());
 

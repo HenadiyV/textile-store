@@ -1,15 +1,13 @@
 package com.vognev.textilewebproject.controller;
 
 import com.vognev.textilewebproject.model.MyUser;
-import com.vognev.textilewebproject.model.dto.CaptchaResponceDto;
+import com.vognev.textilewebproject.dto.CaptchaResponceDto;
 import com.vognev.textilewebproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +18,6 @@ import org.springframework.web.client.RestTemplate;
 import javax.validation.Valid;
 import java.util.Collections;
 import java.util.Map;
-
-import static org.springframework.util.StringUtils.isEmpty;
 
 /**
  * textilewebproject  18/09/2021-10:01
@@ -69,12 +65,12 @@ public class RegistrationController {
 
         if(isConfirm){
 
-            model.addAttribute("password2Error","Passwords are different");
+            model.addAttribute("password2Error","Паролі різні.");//Passwords are different
         }
 
         if(myUser.getPassword()!=null &&!myUser.getPassword().equals(passwordConfirm)){
-
-            model.addAttribute("passwordError","Password confirmation cannot be empty");
+        //Password confirmation cannot be empty
+            model.addAttribute("passwordError","Поле підтвердження пароля не може бути порожнім.");
         }
 
         if(isConfirm||bindingResult.hasErrors()||!response.isSuccess()){
@@ -88,7 +84,7 @@ public class RegistrationController {
         }
         if (!userService.addUser(myUser)) {
 
-            model.addAttribute("usernameError", "User exist!");
+            model.addAttribute("usernameError", "Користувач існує!");
 
             return "registration";
         }
@@ -107,11 +103,11 @@ public class RegistrationController {
         if(isActivated){
 
             model.addAttribute("messageType","success");
-            model.addAttribute("message","User successfully activated");
+            model.addAttribute("message","Користувача успішно активовано ");//User successfully activated
         }else{
 
             model.addAttribute("messageType","danger");
-            model.addAttribute("message","Activation code is not found!");
+            model.addAttribute("message","Код активації не знайдено! ");//Activation code is not found!
 
         }
         return "login";

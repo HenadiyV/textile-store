@@ -1,24 +1,34 @@
 package com.vognev.textilewebproject.controller;
 
-import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.CartDto;
-import com.vognev.textilewebproject.model.dto.OrderDto;
-import com.vognev.textilewebproject.model.dto.ProductDto;
-import com.vognev.textilewebproject.model.dto.UserProductDto;
-import com.vognev.textilewebproject.model.util.DateHelper;
-import com.vognev.textilewebproject.model.util.JsonSimpleParser;
+import com.vognev.textilewebproject.dto.CartDto;
+import com.vognev.textilewebproject.dto.OrderDto;
+import com.vognev.textilewebproject.dto.ProductDto;
+import com.vognev.textilewebproject.dto.UserProductDto;
+import com.vognev.textilewebproject.model.Cart;
+import com.vognev.textilewebproject.model.MyUser;
+import com.vognev.textilewebproject.model.Order;
+import com.vognev.textilewebproject.model.Status;
 import com.vognev.textilewebproject.service.CartService;
 import com.vognev.textilewebproject.service.OrderService;
 import com.vognev.textilewebproject.service.ProductService;
 import com.vognev.textilewebproject.service.UserService;
+import com.vognev.textilewebproject.util.DateHelper;
+import com.vognev.textilewebproject.util.JsonSimpleParser;
+import com.vognev.textilewebproject.util.MyCookies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * textilewebproject_3  11/11/2021-7:53
@@ -43,28 +53,54 @@ public class OrderController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/view-order")
-    public String orderList(Model model){
+    public String orderList(
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable,
+                            Model model
+    ){
+        Page orderList =orderService.getOrderListAllPageable(pageable);//getPageOrders(pageable);
+       // pageable.
+//List<OrderDto> orderDtos=orderService.getOrderDtoList(orderList.getContent());
+        Set<Status> statuses=EnumSet.allOf(Status.class);
 
-        model.addAttribute("orderList",orderService.orderAll());
-        model.addAttribute("products", productService.getProductDtoList());
+        model.addAttribute("page",orderList);
+
+        model.addAttribute("url","/order/view-order");
+
+        model.addAttribute("products", productService.getProductDtoList(0));
+
+        model.addAttribute("statuses",statuses);
 
         return "admin-order";
     }
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @GetMapping("/view-order/{order}")
-    public String orderEdit(
-            @PathVariable Order order,
+    @GetMapping("/search/{search_type}/{search_order}")
+    public String searchOrder(
+            @PathVariable String search_type,
+            @PathVariable String search_order,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable,
             Model model
     ){
-        Set<Status> statuses=EnumSet.allOf(Status.class);
+        Page<OrderDto>orderList = orderService.searchOrder(search_type,search_order,pageable);
 
-        model.addAttribute("order",order);
-        model.addAttribute("url","/order");
-        model.addAttribute("status1",statuses);
+        model.addAttribute("page",orderList);
 
-        return "parts/orderEdit";
+        if(!search_order.isEmpty()&&!search_type.isEmpty()){
+
+        String url = "/order/search/"+search_type+"/"+search_order;
+
+        model.addAttribute("url",url);
+        }else{
+
+            model.addAttribute("url","/order/view-order");
+        }
+
+       Set<Status> statuses=EnumSet.allOf(Status.class);
+
+        model.addAttribute("statuses",statuses);
+
+        return "admin-order";
     }
 
 
@@ -75,7 +111,9 @@ public class OrderController {
             Model model
     ){
         model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order));
+
         model.addAttribute("users", userService.findAll());
+
         model.addAttribute("url","/admin/order");
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
@@ -94,8 +132,11 @@ public class OrderController {
             Model model
     ){
         model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order));
+
         model.addAttribute("users", userService.findAll());
+
         model.addAttribute("userN", user);
+
         model.addAttribute("url","/admin/view-order");
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
@@ -129,7 +170,7 @@ public class OrderController {
                 status,
                 delivery,
                 info_order,
-                order.getDat_create(),
+                order.getCreat(),
                 summ,
                 user,
                 phone_id,
@@ -149,7 +190,9 @@ public class OrderController {
             Model model
     ){
         model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order));
+
         model.addAttribute("users", userService.findAll());
+
         model.addAttribute("url","/order/view-order");
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
@@ -177,7 +220,56 @@ public class OrderController {
         orderService.updateOrder(order,user_id,phone_id,address_id,post_office_id,dat_dispatch,status,delivery,info_order);
 
         model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order.getId()));
+
         model.addAttribute("users", userService.findAll());
+
+        model.addAttribute("url","/admin/view-order");
+
+        Set<Status> statuses=EnumSet.allOf(Status.class);
+
+        model.addAttribute("status1",statuses);
+
+        return "redirect:/order/view-order";
+    }
+
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @GetMapping("/edit/{order}")
+    public String orderEdit(
+            @PathVariable Long order,
+            Model model
+    ){
+        model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order));
+
+        model.addAttribute("url","/order/view-order");
+
+        Set<Status> statuses=EnumSet.allOf(Status.class);
+
+        model.addAttribute("status1",statuses);
+
+        return "parts/edit-order";
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/edit/{order}")
+    public String orderEditSave(
+            @PathVariable  Order order,
+            @RequestParam  (name="user_id")Long user_id,
+            @RequestParam  (name="phone_id")Long phone_id,
+            @RequestParam  (name="address_id")Long address_id,
+            @RequestParam  (name="post_office_id")Long post_office_id,
+            @RequestParam  (name="dat_dispatch")String dat_dispatch,
+            @RequestParam  (name="status")String status,
+            @RequestParam  (name="delivery")String delivery,
+            @RequestParam  (name="info_order")String info_order,
+            Model model
+    ){
+        orderService.updateOrder(order,user_id,phone_id,address_id,post_office_id,dat_dispatch,status,delivery,info_order);
+
+        model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order.getId()));
+
+        model.addAttribute("users", userService.findAll());
+
         model.addAttribute("url","/admin/view-order");
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
@@ -195,7 +287,9 @@ public class OrderController {
             Model model
     ){
         model.addAttribute("cart",cart);
+
         model.addAttribute("users", userService.findAll());
+
         model.addAttribute("url","/order");
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
@@ -238,18 +332,57 @@ public class OrderController {
        cartService.addCartToOrder(cartValue);
 
         model.addAttribute("orderList",orderService.orderAll());
-        model.addAttribute("products", productService.getProductDtoList());
+
+        model.addAttribute("products", productService.getProductDtoList(0));
 
         return "admin-order";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value="/add-cart-to-order", method= RequestMethod.POST
+    )
+    public String addCartToOrder(
+            @RequestParam  Order order,
+            @RequestParam  Long productId,
+            @RequestParam String productName,
+            @RequestParam Double sellingPrice,
+            @RequestParam Double sizeProduct,
+            @RequestParam Double balance,
+            @RequestParam Double siz,
+            @RequestParam Double summ,
+            @RequestParam Double discountPrice,
+            @RequestParam String infoCart,
+            @RequestParam String img,
+            Model model
+
+    ){
+        Date dat = new Date();
+
+        Cart cart= new Cart(productId,sellingPrice,productName,siz,discountPrice,infoCart,dat,order);
+
+        cartService.save(cart);
+
+        model.addAttribute("order",orderService.getOrderByIdFromOrderDto(order.getId()));
+
+        model.addAttribute("url","/order/view-order");
+
+        Set<Status> statuses=EnumSet.allOf(Status.class);
+
+        model.addAttribute("status1",statuses);
+
+        return "redirect:/order/edit/"+order.getId();
+    }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/add-order")
-    public String addOrder(Model model){
+    public String addOrder(
+            Model model,
+            @PageableDefault(size = 20) Pageable pageable
+    ){
+//        sort = {"id"},direction = Sort.Direction.DESC
+        model.addAttribute("users", userService.listUserLimit(pageable));
 
-        model.addAttribute("users", userService.listUserDto());
-        model.addAttribute("products", productService.getProductDtoList());
+        model.addAttribute("products", productService.getProductDtoList(0));
 
         Set<Status> statuses=EnumSet.allOf(Status.class);
 
@@ -284,9 +417,11 @@ public class OrderController {
          cartService.createCartByOrder(order, cartDtoList);
         }
         model.addAttribute("users", userService.listUserDto());
-        model.addAttribute("products", productService.getProductDtoList());
+
+        model.addAttribute("products", productService.getProductDtoList(0));
 
         Set<Status> statuses = EnumSet.allOf(Status.class);
+
         model.addAttribute("statusList", statuses);
 
         return "parts/order";
@@ -326,6 +461,7 @@ public class OrderController {
         ProductDto product = productService.getProductDtoByProductId(id);
 
         model.addAttribute("userProductList",carts);
+
         model.addAttribute("userProduct",product);
 
         return "parts/product-user";
@@ -338,9 +474,59 @@ public class OrderController {
             Model model
     ){
         model.addAttribute("orderList",orderService.orderAllToUser(id));
-        model.addAttribute("products", productService.getProductDtoList());
+
+        model.addAttribute("products", productService.getProductDtoList(0));
 
         return "user";
     }
 }
 //=============== OrderController ===========
+// model.addAttribute("users", userService.partMyUserList());
+//model.addAttribute("products", productService.getProductDtoList(0));
+// String url="edit/"+18;//return orderService.getOrderByIdFromOrderDto(orderId)
+
+// model.addAttribute("users", userService.partMyUserList());
+//model.addAttribute("products", productService.getProductDtoList(0));
+
+//        ,
+//        sizeProduct,balance,
+//        summ,img);
+//       productId: 164
+//orderId: 18
+//productName: Америк. штапель креш марсала
+//sellingPrice: 88
+//sizeProduct: 33
+//balance: 18.5
+//siz: 12
+//summ: 1046
+//discountPrice: 10
+//infoCart:
+//img: noimage.png
+// cartService.addCartToOrder(cartValue);
+//
+//        model.addAttribute("orderList",orderService.orderAll());
+//        model.addAttribute("products", productService.getProductDtoList(0));
+
+//    @PreAuthorize("hasAuthority('ADMIN')")
+//    @GetMapping("/view-order/{order}")
+//    public String orderEdit(
+//            @PathVariable Order order,
+//            Model model
+//    ){
+//        Set<Status> statuses=EnumSet.allOf(Status.class);
+//
+//        model.addAttribute("order",order);
+//        model.addAttribute("url","/order");
+//        model.addAttribute("status1",statuses);
+//
+//        return "parts/orderEdit";
+//    }
+
+//orderList = orderService.getPageOrders(pageable);//getOrderListAllPageable(pageable);?page=1&size=10?search_order="+search_order+"&search_type="+search_type
+
+//return "redirect:"+url;
+//model.addAttribute("page",orderList);search?search_order=val&search_type=2
+//MyCookies.setCookies(request,response);
+//       // model.addAttribute("order",order);
+//        model.addAttribute("url","/order");
+//        model.addAttribute("status1",statuses);

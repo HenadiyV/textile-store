@@ -5,6 +5,9 @@ const closeUpdatePfoneFromUser = document.getElementById("closeUpdatePfoneFromUs
 const updatePostOfficeFromUser = document.getElementById("updatePostOfficeFromUser");
 const closeUpdatePostOfficeFromUser = document.getElementById("closeUpdatePostOfficeFromUser");
 
+
+const upAddress_region = document.getElementById("upAddress_region");
+const upAddress_district = document.getElementById("upAddress_district");
 const upAddress_city = document.getElementById("upAddress_city");
 const upAddress_address = document.getElementById("upAddress_address");
 const upAddress_postCode = document.getElementById("upAddress_postCode");
@@ -38,7 +41,18 @@ if(confirmPassword){
 
 
 if(password){
-    password.addEventListener("change",confirmMyPassword);
+    // let pasWActive=true;
+    // if(pasWActive){
+    // password.addEventListener("click",function(){
+    //
+    //     prompt("Введите свой возраст:");
+    //         pasWActive=false;
+    //
+    // });
+    // }
+    password.addEventListener("change",function(){
+        confirmMyPassword();
+    });
 }
 
 function confirmMyPassword(){
@@ -71,7 +85,7 @@ function confirmMyPassword(){
 }
 
 
-window.addEventListener("click",function(event){
+window.addEventListener("click",function(event){//onclick=
 
     if(updateAddressFromUser){
 
@@ -177,10 +191,12 @@ function  updateAddress(addressId){
 function dataReturnFetchAddress(data1){
 
     let data= JSON.parse(data1);
-
+console.log(data);
     if(!(upAddress_city && upAddress_address && upAddress_postCode && upAddress_id))return;
 
     upAddress_id.value = data.id;
+    upAddress_region.value = data.region;
+    upAddress_district.value = data.district;
     upAddress_city.value = data.city;
     upAddress_address.value = data.address;
     upAddress_postCode.value = data.postCode;
@@ -188,8 +204,10 @@ function dataReturnFetchAddress(data1){
 
     if(data.active){
         upAddress_active.checked=true;
+        upAddress_active.value=1;
     }else{
         upAddress_active.checked=false;
+        upAddress_active.value=0;
     }
 
        updateAddressFromUser.style.display = "block";
@@ -216,8 +234,10 @@ function dataReturnFetchPhone(data1){
 
     if(data.active){
         upPhone_active.checked=true;
+        upPhone_active.value=1;
     }else{
         upPhone_active.checked=false;
+        upPhone_active.value=0;
     }
     updatePhoneFromUser.style.display = "block";
 }
@@ -243,8 +263,10 @@ function dataReturnFetchPostOffice(data1){
 
     if(data.active){
         upPostOffice_active.checked=true;
+        upPostOffice_active.value=1;
     }else{
         upPostOffice_active.checked=false;
+        upPostOffice_active.value=0;
     }
     updatePostOfficeFromUser.style.display = "block";
 }

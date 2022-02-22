@@ -1,9 +1,12 @@
 package com.vognev.textilewebproject.controller;
 
+import com.vognev.textilewebproject.dto.TagDto;
 import com.vognev.textilewebproject.model.Category;
 import com.vognev.textilewebproject.model.Product;
-import com.vognev.textilewebproject.model.dto.ProductDto;
-import com.vognev.textilewebproject.model.util.DateHelper;
+import com.vognev.textilewebproject.dto.ProductDto;
+import com.vognev.textilewebproject.model.Tag;
+import com.vognev.textilewebproject.service.TagService;
+import com.vognev.textilewebproject.util.DateHelper;
 import com.vognev.textilewebproject.service.CategoryService;
 import com.vognev.textilewebproject.service.ImageProductService;
 import com.vognev.textilewebproject.service.ProductService;
@@ -22,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,15 +44,22 @@ public class ProductController {
     @Autowired
     private CategoryService categoryService;
 
+    @Autowired
+    private TagService tagService;
+
     @Value("${upload.path}")
     private String uploadPath;
 
 
     @GetMapping("/product")
-    public String allProducts(Model model){
+    public String allProducts(
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable,
+            Model model
+    ){
 
-        model.addAttribute("productList", productService.getAllProduct());
-
+        model.addAttribute("page", productService.getPagerAllProduct(pageable));
+        //productService.createPriceDollar();
+        model.addAttribute("url","/product");
         return "admin-product";
     }
 
@@ -57,6 +68,10 @@ public class ProductController {
     public String addProductGet(Model model){
 
         model.addAttribute("categoryList",categoryService.findAll());
+
+        model.addAttribute("tagList",tagService.getListTagDto());
+
+        model.addAttribute("imgUrl","/product/add-product/0");
 
         return "parts/productEdit";
     }
@@ -67,6 +82,7 @@ public class ProductController {
             @Valid Product product,
             BindingResult bindingResult,
             @RequestParam String dat_dispatch,
+            @RequestParam (name="tagStr") String tagStr,
             @RequestParam(value = ("files"),required = false) MultipartFile[] files,
             Model model,
             @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
@@ -80,14 +96,15 @@ public class ProductController {
 
             model.mergeAttributes(errors);
             model.addAttribute("product",product);
-
+            model.addAttribute("tagList",tagService.findAll());
+            model.addAttribute("imgUrl","/product/add-product/0");///product/add-product/0
             return "parts/productEdit";
         }
         Date dat= DateHelper.convertStringToDate(dat_dispatch);
 
         product.setDat(dat);
 
-       productService.addProduct(product,files);
+       productService.addProduct(product,files,tagStr);
 
         model.addAttribute("productList", productService.getProductListAllPageable(pageable));
 
@@ -100,10 +117,11 @@ public class ProductController {
             @PathVariable Long product,
             Model model
     ){
-        ProductDto pr= productService.getProductDtoByProductId(product);
+        Product pr= productService.getProductById(product);//getProductDtoByProductId(product);
 
         model.addAttribute("product",pr);
         model.addAttribute("categoryList",categoryService.findAll());
+        model.addAttribute("tagList",tagService.getProductTag(pr.getTags()));
 
         return "parts/productEdit";
     }
@@ -111,37 +129,47 @@ public class ProductController {
 
     @PostMapping("/edit-product/{id_product}")
     public String updateProduct(
-            @PathVariable Product id_product,
+            @PathVariable(name="id_product") Product product,
             @RequestParam(name="name") String name,
             @RequestParam(name="color") String color,
             @RequestParam(name="category") Category category,
             @RequestParam(name="dat_dispatch") String dat,
             @RequestParam(name="active") boolean active,
             @RequestParam(name="purchasePrice") double purchasePrice,
+            @RequestParam(name="purchasePriceDollar") double purchasePriceDollar,
             @RequestParam(name="sellingPrice") double sellingPrice,
             @RequestParam(name="sizeProduct") double sizeProduct,
             @RequestParam(name="selling_size") double selling_size,
             @RequestParam(name="description") String description,
             @RequestParam(name="info") String info,
+            @RequestParam (name="tagStr") String tagStr,
+
             Model model,
             @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable
     ){
-        Date dat_product= com.vognev.textilewebproject.model.util.DateHelper.convertStringToDate(dat);
+        Date dat_product= com.vognev.textilewebproject.util.DateHelper.convertStringToDate(dat);
 
-        Product pr=id_product;
+        Product pr=product;
         pr.setName(name);
         pr.setColor(color);
         pr.setCategory(category);
         pr.setSellingPrice(sellingPrice);
         pr.setSizeProduct(sizeProduct);
         pr.setPurchasePrice(purchasePrice);
+        pr.setPurchasePriceDollar(purchasePriceDollar);
         pr.setDat(dat_product);
         pr.setActive(active);
         pr.setSelling_size(selling_size);
         pr.setDescription(description);
         pr.setInfo(info);
 
-        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
+       productService.addProduct(product,null,tagStr);
+        model.addAttribute("page", productService.getPagerAllProduct(pageable));
+
+        model.addAttribute("url","/product");
+        model.addAttribute("tagList",tagService.findAll());
+
+
 
         return "admin-product";
     }
@@ -188,9 +216,21 @@ public class ProductController {
     ){
         productService.deleteImageProduct(imageId);
 
-        model.addAttribute("productList", productService.getProductListAllPageable(pageable));
+        model.addAttribute( "productList", productService.getProductListAllPageable(pageable));
 
         return "redirect:/product";
     }
 
+    @GetMapping("/product/search")
+    public String searchProduct(
+            @RequestParam String product_name,
+            @PageableDefault(sort = {"id"},direction = Sort.Direction.DESC) Pageable pageable,
+            Model model
+    ){
+
+        model.addAttribute("page", productService.getPagerSearchProduct(product_name,pageable));
+
+        model.addAttribute("url","/product");
+        return "admin-product";
+    }
 }

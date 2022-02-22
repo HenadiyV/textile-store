@@ -1,9 +1,5 @@
 package com.vognev.textilewebproject.service;
 
-import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.util.Constants;
-import com.vognev.textilewebproject.repository.BasketProductRepository;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +11,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 
-import java.util.Date;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * textile-store  13/01/2022-11:54
  */

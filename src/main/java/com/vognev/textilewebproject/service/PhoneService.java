@@ -2,15 +2,12 @@ package com.vognev.textilewebproject.service;
 
 import com.vognev.textilewebproject.model.MyUser;
 import com.vognev.textilewebproject.model.PhoneUser;
-import com.vognev.textilewebproject.model.dto.PhoneUserDto;
+import com.vognev.textilewebproject.dto.PhoneUserDto;
 import com.vognev.textilewebproject.repository.PhoneRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.ZipFile;
+import java.util.*;
 
 /**
  * textilewebproject_2  23/10/2021-6:59
@@ -27,7 +24,7 @@ public class PhoneService {
     }
 
 
-    PhoneUser getNumberPhone(String phone) {
+    public PhoneUser getNumberPhone(String phone) {
         return phoneRepository.getPhoneUserByPhone(phone);
     }
 
@@ -95,13 +92,28 @@ public class PhoneService {
 
     public void addPhoneFromUser(String phone, String info, boolean active, MyUser user) {
 
-        System.out.println(phone);
-        System.out.println(info);
-        System.out.println(active);
-        System.out.println(user.getId());
-        System.out.println(user.getName());
+            if (getNumberPhone(phone)== null) {
 
+                PhoneUser phoneUser = new PhoneUser(phone, active, info, user);
+
+                if (active) {
+
+                    deactivationPhone(user);
+                }
+                save(phoneUser);
+            }
     }
+
+
+    private void deactivationPhone(MyUser user) {
+        List<PhoneUser> phoneUserSet= getPhoneUserListFromUserId(user.getId());
+
+        for(PhoneUser ph:phoneUserSet){
+            ph.setActive(false);
+            save(ph);
+        }
+    }
+
 
     public PhoneUserDto getPhoneUserDtoByPhoneUser(PhoneUser phoneUser) {
 
@@ -111,5 +123,31 @@ public class PhoneService {
                 phoneUser.getInfo(),
                 phoneUser.isActive()
         );
+    }
+
+
+    public void updateProne(Long id, String phone, String info, boolean active) {
+
+        if(getNumberPhone(phone)==null){
+
+                PhoneUser phoneUser = getPhoneById(id);
+
+                phoneUser.setPhone(phone);
+                phoneUser.setInfo(info);
+                phoneUser.setActive(active);
+
+                save(phoneUser);
+        }else{
+            System.out.println(phone+" phone exist");
+        }
+    }
+
+    public List<PhoneUserDto> getListPhoneDtoByListPhone(Set<PhoneUser> phones) {
+        List<PhoneUserDto> phoneUserDtos =new ArrayList<>();
+        for(PhoneUser ph:phones){
+            PhoneUserDto phDto= new PhoneUserDto(ph.getId(),ph.getPhone(),ph.isActive());
+            phoneUserDtos.add(phDto);
+        }
+        return phoneUserDtos;
     }
 }

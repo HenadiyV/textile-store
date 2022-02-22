@@ -17,7 +17,7 @@ public class CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
-    public List findAll() {
+    public List<Category> findAll() {
         return categoryRepository.findAll();
     }
 
@@ -27,5 +27,9 @@ public class CategoryService {
 
     public Category getById(int id){
         return categoryRepository.getById(id);
+    }
+
+    public void delete(Category category){
+        categoryRepository.delete(category);
     }
 }

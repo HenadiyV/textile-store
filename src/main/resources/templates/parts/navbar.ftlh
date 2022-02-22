@@ -14,34 +14,45 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0 mr-auto">
 
             <#if isAdmin>
-                <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="/admin/user">Список корістувачів</a>
-                </li>
-                <li class="nav-item">
-                        <a href="/category" class="nav-link " aria-current="page">Категоріі</a>
-                </li>
-                 <li class="nav-item">
-                     <a href="/product" class="nav-link " aria-current="page">Товар</a>
-                </li>
-                 <li class="nav-item">
-                     <a href="/order/view-order" class="nav-link " aria-current="page">Замовлення</a>
-                </li>
-
-                 <li class="nav-item">
-
-                <a href="/admin" class="nav-link " aria-current="page">
-                    Admin
+            <li class="nav-item dropdown ">
+                <a class="nav-link dropdown-toggle " href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    По роботі
                 </a>
-                 </li>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+
+                    <li>
+                        <a href="/order/view-order" class="dropdown-item " aria-current="page">Замовлення</a>
+                    </li>
+                    <li>
+                        <a href="/product" class="dropdown-item " aria-current="page">Товар</a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item " aria-current="page" href="/admin/user">Список корістувачів</a>
+                    </li>
+                    <li>
+                        <a href="/admin" class="dropdown-item" aria-current="page">
+                            Статистика </a>
+                    </li>
+                    <li>
+                        <a href="/category" class="dropdown-item my-nav-dropdown" aria-current="page">Категоріі</a>
+                    </li>
+                    <li>
+                        <a href="/tag" class="dropdown-item my-nav-dropdown" aria-current="page">Теги</a>
+                    </li>
+
+                </ul>
+            </li>
             </#if>
 
             <#if user??>
                 <li class="nav-item">
                     <a class="nav-link" href="/user/profile">Профіль </a>
                 </li>
+
                 <li class="nav-item">
-                    <a class="nav-link" href="/order/user/${user.id}">Замовлення</a>
+                    <a class="nav-link" href="/order/user/${user.id}">Ваші замовлення</a>
                 </li>
+
              </#if>
 
             </ul>
@@ -51,13 +62,14 @@
                      <a class="btn btn-primary me-1" onclick="showBasket()" href="javascript:void(0)"name="show-basket">Кошик</a>
                 </#if>
                <#if user??>
-                       ${name}
+                   ${name}
                <input type="hidden" id="__user_id" value="${user.id}"/>
                    <#else>
                        <a class="btn btn-primary me-1" href="/login" >Вхід</a>
-                                <a class="btn btn-primary me-1" href="/registration" >Регістрація</a>
+                                <a class="btn btn-primary me-1" href="/registration" >Реєстрація</a>
                </#if>
             </div>
-       </div>
-        <#if user??><@l.logout /></#if>
+
+<#if user??><@l.logout /></#if>
+        </div>
     </nav>

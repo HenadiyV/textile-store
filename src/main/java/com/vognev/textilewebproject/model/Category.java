@@ -9,6 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -28,8 +29,8 @@ public class Category implements
     @NotBlank(message = "Введіть назву категорії.")
     private String name;
 
-    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private Set<Product> products;
+    @OneToMany(mappedBy = "category",fetch = FetchType.LAZY)//cascade = CascadeType.ALL,
+    private List<Product> products;
 
     public Category() {
     }
@@ -46,15 +47,15 @@ public class Category implements
         return name;
     }
 
-    public void setName(String categoryName) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    public Set<Product> getProducts() {
+    public List<Product> getProducts() {
         return products;
     }
 
-    public void setProducts(Set<Product> products) {
+    public void setProducts(List<Product> products) {
         this.products = products;
     }
 

@@ -5,11 +5,11 @@
     <form action="${path}" method="post">
         <div class="form-group row mb-3">
 
-            <label class="col-sm-2 col-form-label">Ваш логін:</label>
+            <label class="col-sm-4 col-form-label">Ваш логін:</label>
             <div class="col-sm-6">
 
                 <input type="text" name="username" class="form-control ${(usernameError??)?string('is-invalid','')}"
-                       value="<#if user??>${user.username}</#if>" placeholder="Логін" />
+                       value="<#if user??>${user.username}<#else>admin</#if>" placeholder="Логін" />
 
                     <#if usernameError??>
                         <div class="invalid-feedback">
@@ -20,11 +20,11 @@
         </div>
         <div class="row mb-3">
 
-            <label class="col-sm-2 col-form-label">Ваш пароль:</label>
+            <label class="col-sm-4 col-form-label">Ваш пароль:</label>
 
             <div class="col-sm-6">
 
-                <input type="password" name="password" class="form-control ${(passwordError??)?string('is-invalid','')}"
+                <input type="password" name="password" value="admin" class="form-control ${(passwordError??)?string('is-invalid','')}"
                        placeholder="Пароль" />
 
                     <#if passwordError??>
@@ -37,7 +37,7 @@
             <#if isRegisterForm>
          <div class="row mb-3 ">
 
-              <label class="col-sm-2 col-form-label"> Повторіть пароль:</label>
+              <label class="col-sm-4 col-form-label"> Повторіть пароль:</label>
              <div class="col-sm-6">
 
                  <input type="password" name="password2"
@@ -53,7 +53,7 @@
           </div>
           <div class="row mb-3 ">
 
-                <label class="col-sm-2 col-form-label"> Ваша єлєктрона адресса:</label>
+                <label class="col-sm-4 col-form-label"> Ваша електрона адреса:</label>
               <div class="col-sm-6">
 
                     <input type="email" name="email" class="form-control ${(emailError??)?string('is-invalid','')}"

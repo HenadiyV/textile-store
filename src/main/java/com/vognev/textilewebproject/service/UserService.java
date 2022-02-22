@@ -1,14 +1,13 @@
 package com.vognev.textilewebproject.service;
 
 
+import com.vognev.textilewebproject.dto.*;
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.AddressUserDto;
-import com.vognev.textilewebproject.model.dto.PhoneUserDto;
-import com.vognev.textilewebproject.model.dto.PostOfficeUserDto;
-import com.vognev.textilewebproject.model.dto.UserDto;
+import com.vognev.textilewebproject.util.Constants;
 import com.vognev.textilewebproject.repository.MyUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -50,9 +49,13 @@ public class UserService implements UserDetailsService {
     @Value("${hostname}")
     private String hostname;
 
+    private static int  START_LIST=0;
+    private static int  SIZE_USER_LIST=0;
+    private static int  PAGE_NUM=0;
+    private static double  SIZE_USER_PAGE=0;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String  username) throws UsernameNotFoundException {
 
         MyUser myUser=myUserRepository.findByUsername(username);
 
@@ -79,7 +82,7 @@ public class UserService implements UserDetailsService {
 
         save(myUser);
 
-        //sendUser(save(myUser));//может мешать антивирус и быть заблокированны поля  провайдером
+        sendUser(save(myUser));//может мешать антивирус и быть заблокированны поля  провайдером
         return true;
     }
 
@@ -88,11 +91,13 @@ public class UserService implements UserDetailsService {
         return myUserRepository.save(user);
     }
 
-    //UserDto
+
     public Map<String,String> addUserFromAdmin(
             MyUser userDto,
             String info,
             String phone,
+            String region,
+            String district,
             String city,
             String address,
             String postCode,
@@ -150,12 +155,12 @@ public class UserService implements UserDetailsService {
 
             phoneService.saveUserPhone(phone,newUser);
 
-            addressService.saveUserAddress(city,address,postCode,newUser);
+            addressService.saveUserAddress(region,district,city,address,postCode,newUser);
 
             postOfficeService.saveUserPostOffice(postOffice,newUser);
 
         }
-        //sendUser(myUser);//может мешать антивирус и быть заблокированны поля  провайдером
+        sendUser(myUser);//может мешать антивирус и быть заблокированны поля  провайдером
         return errorMessage;
     }
 
@@ -176,17 +181,40 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void sendAdmin(BasketDto basketDto) {
+        List<MyUser> myUsers =myUserRepository.findAll();
+        for(MyUser us:myUsers){
+            for(Role rl:us.getRoles()){
+                if(rl.name().contains("ADMIN")){
+
+                    String message=String.format(
+                        "Hello,  \n"+ " You have new order user phone: %s \n"+
+                                "and name: %s",
+
+                       basketDto.getPhone(),
+                       basketDto.getName()
+                );
+                mailSender.send(us.getEmail(),"New order ", message);
+                    System.out.println(rl.name());
+                }
+            }
+        }
+        System.out.println("oj");
+    }
+
 
     public boolean activateUser(String code) {
 
         MyUser myUser = myUserRepository.findByActivationCode(code);
 
         if(myUser==null){
+
             return false;
         }
         myUser.setActivationCode(null);
 
         myUserRepository.save(myUser);
+
         return true;
     }
 
@@ -214,14 +242,17 @@ public class UserService implements UserDetailsService {
     }
 
 
-    public void updateProfile(MyUser user,
+    public void updateProfile(
+                              String username,
+                              String name,
                               String password,
-                              String email
+                              String email,
+                              String info,
+                              MyUser user
     ) {
         String userEmail = user.getEmail();
 
-        boolean isEmailChanged = (email != null&& !email.equals(userEmail))||
-                (userEmail != null && !userEmail.equals(email));
+        boolean isEmailChanged = (email != null&& !email.equals(userEmail))||(userEmail != null && !userEmail.equals(email));
 
         if(isEmailChanged){
 
@@ -231,12 +262,32 @@ public class UserService implements UserDetailsService {
                 user.setActivationCode(UUID.randomUUID().toString());
             }
         }
+
         if(!ObjectUtils.isEmpty(password)){
+
             user.setPassword(passwordEncoder.encode(password));
         }
 
+        if(!ObjectUtils.isEmpty(username)){
+
+                    user.setUsername(username);
+        }
+
+        if(!ObjectUtils.isEmpty(name)){
+
+                    user.setName(name);
+
+        }
+
+        if(!ObjectUtils.isEmpty(info)){
+
+            user.setInfo(info);
+        }
+
         myUserRepository.save(user);
+
         if(isEmailChanged){
+
             sendUser(user);
         }
     }
@@ -262,11 +313,10 @@ public class UserService implements UserDetailsService {
 
         for(PhoneUser phoneUser:phoneUsers){
 
-            PhoneUserDto phoneUserToOrderDto =new PhoneUserDto(phoneUser.getId(),phoneUser.getPhone());
+            PhoneUserDto phoneUserToOrderDto =new PhoneUserDto(phoneUser.getId(),phoneUser.getPhone(),phoneUser.isActive());
 
             phoneUserToOrderDtoList.add(phoneUserToOrderDto);
         }
-
         List<AddressUser>addressUserList=new ArrayList<>(myUser.getAddresses());
 
         List<AddressUserDto>addressToOrderDtoList = new ArrayList<>();
@@ -275,6 +325,8 @@ public class UserService implements UserDetailsService {
 
             AddressUserDto addressToOrderDto= new AddressUserDto(
                     addressUser.getId(),
+                    addressUser.getRegion(),
+                    addressUser.getDistrict(),
                     addressUser.getCity(),
                     addressUser.getAddress(),
                     addressUser.getPostCode(),
@@ -282,7 +334,6 @@ public class UserService implements UserDetailsService {
 
             addressToOrderDtoList.add(addressToOrderDto);
         }
-
         List<PostOfficeUser> postOfficeUserList = new ArrayList<>(myUser.getPostOfficeUsers());
 
         List<PostOfficeUserDto> postOfficeToOrderDtoList = new ArrayList<>();
@@ -291,7 +342,8 @@ public class UserService implements UserDetailsService {
 
             PostOfficeUserDto postOfficeToOrderDto = new PostOfficeUserDto(
                     postOfficeUser.getId(),
-                    postOfficeUser.getPostOffice());
+                    postOfficeUser.getPostOffice(),
+                    postOfficeUser.isActive() );
 
             postOfficeToOrderDtoList.add(postOfficeToOrderDto);
         }
@@ -301,6 +353,7 @@ public class UserService implements UserDetailsService {
                 myUser.getUsername(),
                 myUser.getEmail(),
                 myUser.isActive(),
+                PAGE_NUM,
                 phoneUserToOrderDtoList,
                 addressToOrderDtoList,
                 postOfficeToOrderDtoList
@@ -311,15 +364,19 @@ public class UserService implements UserDetailsService {
 
     public List<UserDto> searchUser(String us){
 
-        List<UserDto> userList=myUserRepository.searchUserNickName(us);
-
-        return userList;
+        return getJsonMyUser(myUserRepository.findByNameAndUsername(us));
     }
 
 
     public List<UserDto> listUserDto(){
 
         List<UserDto> userList=myUserRepository.listUserDto();
+
+        return userList;
+    }
+    public List<UserDto> listUserLimit(Pageable pageable){
+
+        List<UserDto> userList=myUserRepository.listUserLimit(pageable);
 
         return userList;
     }
@@ -363,8 +420,139 @@ public class UserService implements UserDetailsService {
         return errorMessage;
     }
 
+
     MyUser saveUserBasket(MyUser myUser){
 
         return myUserRepository.save(myUser);
     }
+
+
+    public MyUser searchEmail(String email) {
+
+        return myUserRepository.findByEmail(email);
+    }
+
+
+    public List<MyUser> partMyUserList() {
+
+        return  myUserRepository.findAll().subList(START_LIST,Constants.LIST_SIZE);
+    }
+
+
+    public List<UserDto> scrollMyUserList(int start) {
+
+        PAGE_NUM=start;
+
+        SIZE_USER_PAGE=(myUserRepository.countUser()/Constants.LIST_SIZE);
+
+        if(SIZE_USER_LIST==0){
+
+            SIZE_USER_LIST = myUserRepository.countUser();
+        }
+        List<MyUser> userList = new ArrayList<>();
+
+         if(PAGE_NUM==0){
+
+            userList = myUserRepository.findAll().subList(PAGE_NUM,PAGE_NUM+Constants.LIST_SIZE);
+
+            return getJsonMyUser(userList);
+        }else if((PAGE_NUM+Constants.LIST_SIZE)<SIZE_USER_LIST){
+
+            userList = myUserRepository.findAll().subList(PAGE_NUM,PAGE_NUM+Constants.LIST_SIZE);
+
+            return getJsonMyUser(userList);
+        }else if(SIZE_USER_LIST-PAGE_NUM<Constants.LIST_SIZE){
+
+            userList = myUserRepository.findAll().subList(PAGE_NUM,SIZE_USER_LIST);
+
+            PAGE_NUM=0;
+
+            return getJsonMyUser(userList);
+        }else{
+             PAGE_NUM=0;
+            return getJsonMyUser(myUserRepository.findAll());
+        }
+
+    }
+
+
+    private List<UserDto> getJsonMyUser(List<MyUser> userList){
+
+        List<UserDto>userDtos= new ArrayList<>();
+
+        for(MyUser user:userList){
+
+          List<PhoneUserDto> phoneDtos=  phoneService.getListPhoneDtoByListPhone(user.getPhones());
+
+          List<AddressUserDto> addressDtos=  addressService.getListAddressDtoByListAddress(user.getAddresses());
+
+          List<PostOfficeUserDto> postOfficeDtos=  postOfficeService.getListPostOfficeDtoByListPostOffice(user.getPostOfficeUsers());
+
+          UserDto userDto = new UserDto(user.getId(),
+                    user.getName(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.isActive(),
+                    PAGE_NUM,
+                    phoneDtos,
+                    addressDtos,
+                    postOfficeDtos);
+
+            userDtos.add(userDto);
+        }
+        return userDtos;
+    }
+
 }
+//==============UserService
+//SIZE_PAGE=myUserRepository.countUser()/Constants.LIST_SIZE;
+
+//PAGE_NUM +=Constants.LIST_SIZE;//PAGE_NUM=SIZE_PAGE-PAGE_NUM; //PAGE_NUM=Constants.LIST_SIZE;
+
+
+//findByUsernameAndName
+//        List<UserDto> userList=new ArrayList<>();
+//              for(UserDto usr:myUserRepository.searchUserNickName(us)){
+//                   usr.setPageNum(0);
+//                   userList.add(usr);
+//              }
+//        if(SIZE_LIST==0){
+//            SIZE_LIST=myUserRepository.countUser();
+//        }
+//        List<MyUser> userList = new ArrayList<>();
+//
+//        double res=SIZE_LIST/Constants.LIST_SIZE;
+//
+//        System.out.println(SIZE_LIST);
+//        System.out.println(START_LIST);
+//        System.out.println(res);
+//
+//        //scrollMyUserList(END_LIST++);
+//
+//        if(START_LIST==0){
+//
+//            userList = myUserRepository.findAll().subList(START_LIST,START_LIST+Constants.LIST_SIZE);
+//
+//            START_LIST=Constants.LIST_SIZE;
+//
+//            return userList;
+//        }else if((START_LIST+Constants.LIST_SIZE)<SIZE_LIST){
+//
+//            userList = myUserRepository.findAll().subList(START_LIST,START_LIST+Constants.LIST_SIZE);
+//
+//            START_LIST +=Constants.LIST_SIZE;
+//
+//            return userList;
+//        }else if(SIZE_LIST-START_LIST<Constants.LIST_SIZE){
+//
+//            userList = myUserRepository.findAll().subList(START_LIST,SIZE_LIST);
+//
+//            START_LIST=0;
+//
+//            return userList;
+//        }else{
+//
+//            START_LIST=0;
+//
+//            return myUserRepository.findAll();
+//        }

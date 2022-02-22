@@ -20,21 +20,16 @@
     <link type="text/css" rel="stylesheet" href="/static/js/node_modules/air-datepicker/air-datepicker.css" />
     <script type="text/javascript" src="/static/js/node_modules/air-datepicker/air-datepicker.js"></script>
     <#--async defer-->
-
+    <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 </head>
 <body>
-
-<div class="row">
-    <div class="col-9">
-       <#include "navbar.ftlh">
-
-    </div>
-    <div class="col-3">
-
-        <br/><br/><br/><br/>
-    </div>
+<div class="container">
+    <#include "navbar.ftlh">
 </div>
-    <#nested>
+
+<div class="container mt-2">
+<#nested>
+</div>
 
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
 <script type="text/javascript" src="/static/js/node_modules/air-datepicker/my_script_to_air.js"></script>

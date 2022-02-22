@@ -10,8 +10,9 @@ const addCartToOrder = document.getElementById('addCartToOrder');
 const spanAddCartToOrder  = document.getElementById("closeAddCartToOrder");
 const titleSumm =document.querySelector("#order_summ");
 const search_product =document.querySelector("#search_product");
-const search_user =document.getElementById("search_user");
+const search_user =document.querySelector("#search_user");
 const select_userL =document.getElementById('userL');
+const select_userE =document.getElementById('userE');
 const select_productL =document.getElementById('productL');
 const btn_form =document.getElementById('btn_form');
 const pr_order =document.getElementById('pr_order');
@@ -20,7 +21,9 @@ const us_order =document.getElementById('us_order');
 const save_cart =document.getElementById('save_cart');
 const cartValue =document.getElementById('cartValue');
 const dat_dispatch =document.getElementById('dat_dispatch');
+const dat_dispatch1 =document.getElementById('dat_dispatch1');
 const user_id =document.getElementById("user_id");
+const order_user_table =document.getElementById("order_user_table");
 
 let salle=0;
 let balance=0;
@@ -28,7 +31,7 @@ let size_sale=0;
 let size_product=0;
 let ind=0;
 let orderSumm="Сумма заказу: ";
-let orderId=-1;
+let orderId=0;
 let productMap= new Map();
 let productToCartMap=new Map();
 let cartMap=new Array();
@@ -50,8 +53,25 @@ window.addEventListener("click", function(event) {
             addCartToOrder.style.display = "none";
         }
     }
-});
+    // if(dat_dispatch) {console.log("ok");}
 
+});
+window.addEventListener("load",function(){
+    if(dat_dispatch) {
+        if(dat_dispatch.value.length==0){ //dat_dispatch.value = '';
+            let options = {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                timezone: 'UTC'
+            };
+
+            let dat = new Date();
+
+            dat_dispatch.value += dat.toLocaleString('ru', options);
+        }console.log("ok");
+    }
+});
 
 if(select_userL){
 
@@ -64,7 +84,17 @@ if(select_userL){
         myFetchFunction(url,null,"Get",'','us_order');
     });
 }
+if(select_userE){
 
+    select_userE.addEventListener("change",function(){
+
+        let  selectedText = this.options[this.selectedIndex].value;
+
+        let url="/rest/user/"+selectedText;
+
+        myFetchFunction(url,null,"Get",'','us_order');
+    });
+}
 
 if(select_productL){
 
@@ -95,38 +125,42 @@ if(search_product!=null){
 if(search_user!=null){
 
     search_user.addEventListener("input",function(){
-
- let nam =this.value!==''?this.value:'&#8193;';
+        pag=0;
+        //console.log("pag "+pag);
+let place=select_userL!=null?select_userL.id:select_userE.id;
+ let name =this.value!==''?this.value:'_';
 // if(this.value.length>0)nam =this.value;
-         //console.log(nam);
-        let url="/rest/us-search/"+nam;
+        //console.log("nam "+this.value);
+        let url="/rest/search-user/"+name;
        // console.log(nam);
-        myFetchFunction(url,null,"Get",'','userL');
+        myFetchFunction(url,null,"Get",'',place);
     });
 }
 
-if(dat_dispatch) {
 
-    dat_dispatch.addEventListener('click', function () {
-        dat_dispatch.value='';
-        let options = {
-            year: 'numeric',
-            month: 'numeric',
-            day: 'numeric',
-            timezone: 'UTC'
-        };
+function viewDataReturnFetch(data,place1){
+//console.log(place1);
+    switch(place1){
 
-        let dat = new Date();
+        case "userL": dataReturnFetchUserList(data,"userL"); break;
 
-        dat_dispatch.value += dat.toLocaleString('ru', options);
+        case "userE": dataReturnFetchUserList(data,"userE"); break;
 
-        controlElementSaveCart();
-    });
+        case "productL": dataReturnFetchProductList(data,"productL");break;
+
+        case "productList": createProductList(data,"productList"); break;
+
+        case "us_order": dataReturnFetchUser(data,"us_order"); break;
+
+        case "pr_order":  dataReturnFetchProduct(data,"pr_order");break;
+    }
 }
+
+
 
 // NEW ORDER user list
 function dataReturnFetchUserList(data1,place){
-
+//console.log(place);
     let newPalce= document.getElementById(place);
 
     newPalce.innerHTML='';
@@ -216,7 +250,7 @@ function dataReturnFetchUser(data1,place){
 
         document.querySelector('#postOffice_id').value=this.options[this.selectedIndex].value;
     });
-
+    order_user_table.removeAttribute('hidden');
     controlElementSaveCart();
 }
 
@@ -253,26 +287,6 @@ function dataReturnFetchProductList(data1,place){
     }
     newPalce.innerHTML=option.join(' ');
 }
-
-
-function viewDataReturnFetch(data,place1){
-
-    let place =place1.indexOf("id")>0?place1.getAttribute("id"):place1;
-
-    switch(place){
-
-        case "userL": dataReturnFetchUserList(data,"userL"); break;
-
-        case "productL": dataReturnFetchProductList(data,"productL");break;
-
-        case "productList": createProductList(data,"productList"); break;
-
-        case "us_order": dataReturnFetchUser(data,"us_order"); break;
-
-        case "pr_order":  dataReturnFetchProduct(data,"pr_order");break;
-    }
-}
-
 
 function myFetchFunction(url,data,method,csrf,place){
     console.log("url= "+url);
@@ -311,15 +325,18 @@ function createProductTableToOrder(data,place){
         if (v !== undefined) {
 
             let ob = v[1];
+            console.log(ob);
 
+let balan=ob.product_balance.toFixed(2);
+console.log(balan);
             d += `<tr>
                 <td class='td-hidden'>${ob.id}</td>
                 <td><div class='tag'>${ob.name}</div> </td>
                 <td><div class='tag'>${ob.color}</div> </td>
-                <td>${ob.product_balance} </td>
+                <td>${balan} </td>
                 <td>${ob.sellingPrice}</td>
-                <td><input type='number' name='metr' min='0' data-metr='${v[0]}' max="&{ob.product_balance}"  value="${ob.metr}" /></td>
-                <td><input type='number' name='bonus' data-bonus="${v[0]}" value="${ob.bonus}" /></td>
+                <td><input type='number' name='metr' min='0' data-metr='${v[0]}' max="${balan}"  value="${ob.metr}" /></td>
+                <td><input type='number' name='bonus' data-bonus="${v[0]}" value="${ob.bonus}" min="0" /></td>
                 <td><input type='text' name='info' data-info="${v[0]}" value="${ob.info}" /></td>
                 <td><img src="/img/${v[1].img}"  /></td>
                 <td><input class='btn btn-primary ' onclick='delProductToOrder(${v[0]},${place})' value='X' readonly /></td>
@@ -499,15 +516,15 @@ function addProductToCartValue(data){
     for (let v of data.entries()) {
 
         if(v[1].metr>0){
-
+           console.log((v[1].product_balance).toFixed(2));
             let ob={
                 cartId:null,
                 orderId:orderId,
                 productId:v[1].id,
                 productName:v[1].name,
                 sellingPrice:v[1].sellingPrice,
-                sizeProduct:v[1].sizeProduct,
-                balance:v[1].product_balance,
+                sizeProduct:+(v[1].sizeProduct).toFixed(2),
+                balance:+(v[1].product_balance).toFixed(2),
                 siz:v[1].metr,
                 summ:v[1].summ,
                 discountPrice:v[1].bonus,
@@ -549,7 +566,7 @@ function updateBalance(){
 
     if(balanceProduct_inpt){
 
-    balanceProduct_inpt.value=balance;
+    balanceProduct_inpt.value=balance;//.toFixed(2)
     }
 }
 
@@ -579,7 +596,7 @@ function updateSumm(){
     }
     summ_inpt.value=siz_inpt.value*salle-discount_price_inpt.value;
 
-    balance_span.innerHTML="Остаток: "+balance;
+    balance_span.innerHTML="Остаток: "+balance.toFixed(2);
 
     updateBalance();
 }
@@ -611,7 +628,7 @@ function modalShow(id) {
             salePrice_inpt.value=data.sellingPrice;
 
             let info_cart_inpt=document.querySelector("textarea[name='info_cart']");
-            balance=data.balance;
+            balance=data.balance.toFixed(2);
             balance_span.innerHTML="Остаток: "+balance;
 
             id_inpt.value=data.cartId;
@@ -623,7 +640,7 @@ function modalShow(id) {
             siz_inpt.value=data.siz ;
             siz_inpt.setAttribute("data-siz",data.siz);
             summ_inpt.value=data.summ ;
-            balanceProduct_inpt.value=data.balance;
+            balanceProduct_inpt.value=data.balance.toFixed(2);
             balanceProduct_inpt.setAttribute("data-balance",data.balance);
             size_sale=data.sallingProduct;
             size_product=data.sizeProduct;
@@ -652,7 +669,7 @@ if(spanAddCartToOrder){
         addCartToOrder.style.display = "none";
     };
 }
-
+let positionList=0;
 //== ADD CART TO ORDER ==
 function  addCartToOrderShow(order_id, order_summ) {
 
@@ -669,8 +686,8 @@ function  addCartToOrderShow(order_id, order_summ) {
             titleSumm.innerHTML = orderSumm + 0;
         }
         let request = new XMLHttpRequest();
-
-        request.open('GET', '/rest/product-list');
+let url="/rest/product-list/"+positionList;
+        request.open('GET', url);
 
         request.send();
 
@@ -693,8 +710,9 @@ function  addCartToOrderShow(order_id, order_summ) {
 
 //таблица для добавления к заказу
 function createProductList(data,place){
-
-    let tab = ["<table id='productTable' class='table-modal'><thead><tr><th class='td-hidden'>id</th>" +
+console.log(data);
+    let tab = ["<table id='productTable' class='table-modal'><thead>" +
+    "<tr><th class='td-hidden'>id</th>" +
                 "<th class='table-text'>назва</th><th>остаток</th>" +
                 "<th>ціна</th>" +
     "<th>img</th></tr></thead> <tbody>"];
@@ -704,13 +722,13 @@ function createProductList(data,place){
         let productId1 = data[i].id;
 
         let product = data[i];
-
+positionList=data[i].positionList;
         productMap.set(productId1, createObjectProduct(product));
 
         let tr = "<tr>" +
             "<td class='td-hidden'>"+data[i].id+"</td>" +
             "<td ><div class='tag'>" + data[i].name + "</div></td>" +
-            "<td>" + data[i].product_balance + "</td>" +
+            "<td>" + (data[i].product_balance).toFixed(2) + "</td>" +
             "<td>" + data[i].sellingPrice + "</td>" +
             "<td><img src=/img/"+ data[i].img + "/></td>" +
             "</tr>";
@@ -719,7 +737,7 @@ function createProductList(data,place){
         }
     }
     tab.push("</tbody></table>");
-
+let up="<a>";
     div = document.getElementById(place).innerHTML = tab.join('');
 
     document.querySelectorAll("#productTable tr").forEach(e => e.addEventListener("click", addProduct));
@@ -728,7 +746,7 @@ function createProductList(data,place){
 //создание обьекта для таблицы товара
 function createObjectProduct(ob) {
 
-    let ordId1=orderId===-1?null:orderId;
+    let ordId1=orderId===0?null:orderId;
 
     return {
         id: ob["id"],
@@ -741,7 +759,8 @@ function createObjectProduct(ob) {
         color: ob["color"],
         metr: 0,
         bonus: 0,
-        info: ''
+        info: '',
+        img:ob.img
     };
 }
 
@@ -784,10 +803,10 @@ function checkBalance(productToCartMap, ob) {
 
                 if (ob.product_balance > v[1].product_balance) {
 
-                    ob.product_balance = v[1].product_balance;
+                    ob.product_balance = (v[1].product_balance).toFixed(2);
                 } else {
 
-                    v[1].product_balance = ob.product_balance;
+                    v[1].product_balance = ob.product_balance.toFixed(2);
                 }
             }else return null;
         }
@@ -802,7 +821,7 @@ function checkMetr(productToCartMap, ob) {
 
         if (ob.id === v[1].id && ob.metr !== 0) {
 
-            v[1].product_balance = ob.product_balance;
+            v[1].product_balance = ob.product_balance.toFixed(2);
         }
     }
 }
@@ -863,4 +882,102 @@ function controlElementSaveCart(){
         }
     }
 }
+
+
+let rw=0;
+let pag=0;
+let dt='';
+$('.select_listUser').scroll(function(e){
+    let $t=$(this);
+    ++rw;
+    if ($t.height()+$t.scrollTop()-$t.prop('scrollHeight')>0) return;
+
+    console.log(rw);
+    if(rw>14){
+        add_rand_opt($t);
+        rw=0;
+    }
+
+});
+
+function add_rand_opt($t) {
+    let url="/rest/userList/?page="+pag;
+    newFetch(url,null,"GET",null);
+    if(dt!==''){
+        console.log(dt);
+        console.log(dt.length);
+        if(dt.length>0){
+            for(let i=0;i<dt.length;i++){
+                let tex=dt[i].username+" | "+dt[i].name;
+                $('<option>',{text: tex}).val(dt[i].id).appendTo($t);
+            }
+            pag++;
+        }else{
+            pag=0;
+        }
+        console.log("pag"+pag);
+        dt='';
+
+
+
+    }
+    //console.log(data.length);
+    //$('<option>',{text: Math.random()}).val(Math.random()).appendTo($t);
+    // if(data.length === 0){
+    //    pag=0;
+    // }else {}
+    // pag++;
+    // console.log("pag"+pag);
+
+}
+
+function newFetch(url,body,method,csrf){
+
+    let status = function (response) {
+        if (response.status !== 200) {
+            return Promise.reject(new Error(response.statusText))
+        }
+        return Promise.resolve(response)
+    };
+    let json = function (response) {
+        return response.json()
+    };
+
+    fetch(url, {
+        method: method,
+        body: body,
+        headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    })
+        .then(status)
+        .then(json)
+        .then( data=>{dt=data})
+        .catch(function (error) {
+            console.log('error', error)
+        })
+}
+
 //===========================order.js ============
+// if(dat_dispatch) {
+//
+//     dat_dispatch.addEventListener('click', function () {
+//         dat_dispatch.value='';
+//         let options = {
+//             year: 'numeric',
+//             month: 'numeric',
+//             day: 'numeric',
+//             timezone: 'UTC'
+//         };
+//
+//         let dat = new Date();
+//
+//         dat_dispatch.value += dat.toLocaleString('ru', options);
+//
+//         //controlElementSaveCart();
+//     });
+// }
+// if(place1.indexOf("id")>0){
+//     let place =place1.indexOf("id")>0?place1.getAttribute("id"):place1;
+// }

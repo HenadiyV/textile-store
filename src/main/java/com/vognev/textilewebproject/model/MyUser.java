@@ -17,6 +17,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -65,6 +66,8 @@ public class MyUser implements UserDetails, Serializable {
     private Set<AddressUser> addresses;
     @OneToMany(mappedBy = "postOfficeUser",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<PostOfficeUser> postOfficeUsers;
+    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Order> userOrders;
 
 
 
@@ -221,5 +224,13 @@ public class MyUser implements UserDetails, Serializable {
 
     public void setRating(int rating) {
         this.rating = rating;
+    }
+
+    public List<Order> getUserOrders() {
+        return userOrders;
+    }
+
+    public void setUserOrders(List<Order> userOrders) {
+        this.userOrders = userOrders;
     }
 }

@@ -8,10 +8,12 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import javax.validation.constraints.DecimalMin;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,13 +30,15 @@ public class Product implements Serializable {
 
     private String color;
 
-    @DecimalMin(message = "Введіть метраж тканини.",value = "0", inclusive = false)
+    @DecimalMin(message = "Введіть метраж тканини.",value = "1", inclusive = false)
     private double sizeProduct;
 
-    @DecimalMin(message = "Введіть закупочну ціну тканини.",value = "0", inclusive = false)
+   @DecimalMin(message = "Введіть закупочну ціну тканини.",value = "1", inclusive = false)
     private double purchasePrice;
 
-    @DecimalMin(message = "Введіть продажну ціну тканини." ,value = "0", inclusive = false)
+    private double purchasePriceDollar;
+
+    @DecimalMin(message = "Введіть продажну ціну тканини." ,value = "1", inclusive = false)
     private double sellingPrice;
 
     private boolean active;
@@ -53,6 +57,12 @@ public class Product implements Serializable {
 
     @OneToMany(mappedBy = "product",fetch = FetchType.LAZY)//,cascade = CascadeType.ALL
     private List<ImageProduct> imageProducts;
+
+    @ManyToMany( fetch = FetchType.LAZY)
+    @JoinTable(name="products_tags",
+            joinColumns=@JoinColumn(name="product_id", referencedColumnName="id"),
+           inverseJoinColumns=@JoinColumn(name="tag_id", referencedColumnName="id"))
+            private Set<Tag> tags = new HashSet<>();
 
     public Product() {
     }
@@ -159,5 +169,21 @@ public class Product implements Serializable {
 
     public void setInfo(String info) {
         this.info = info;
+    }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public double getPurchasePriceDollar() {
+        return purchasePriceDollar;
+    }
+
+    public void setPurchasePriceDollar(double purchasePriceDollar) {
+        this.purchasePriceDollar = purchasePriceDollar;
     }
 }

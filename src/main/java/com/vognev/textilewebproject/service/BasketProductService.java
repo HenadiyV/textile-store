@@ -2,8 +2,8 @@ package com.vognev.textilewebproject.service;
 
 import com.vognev.textilewebproject.model.Basket;
 import com.vognev.textilewebproject.model.BasketProduct;
-import com.vognev.textilewebproject.model.dto.BasketProductDto;
-import com.vognev.textilewebproject.model.util.Constants;
+import com.vognev.textilewebproject.dto.BasketProductDto;
+import com.vognev.textilewebproject.util.Constants;
 import com.vognev.textilewebproject.repository.BasketProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,12 +33,14 @@ public class BasketProductService {
     }
 
 
-    void deleteBasketProduct(Long id){
+    void deleteBasketProduct(Long id,boolean operator){
 
         BasketProduct basketProduct=basketProductRepository.getById(id);
 
-        productService.updateProductSallingSize(basketProduct.getProductId(),basketProduct.getSize(),false);
+    if(operator) {
 
+        productService.updateProductSallingSize(basketProduct.getProductId(), basketProduct.getSize(), false);
+    }
         basketProductRepository.delete(basketProduct);
     }
 

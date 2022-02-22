@@ -34,9 +34,10 @@ public class PhoneUser implements  Serializable {
     public PhoneUser() {
     }
 
-    public PhoneUser( String phone,boolean active, MyUser phoneUser) {
+    public PhoneUser( String phone,boolean active,String info, MyUser phoneUser) {
         this.active = active;
         this.phone = phone;
+        this.info = info;
         this.phoneUser = phoneUser;
     }
 

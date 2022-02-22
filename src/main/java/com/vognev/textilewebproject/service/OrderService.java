@@ -3,20 +3,23 @@ package com.vognev.textilewebproject.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.*;
-import com.vognev.textilewebproject.model.util.Constants;
-import com.vognev.textilewebproject.model.util.OrderSumm;
+import com.vognev.textilewebproject.dto.*;
+import com.vognev.textilewebproject.util.Constants;
+import com.vognev.textilewebproject.util.OrderSumm;
 import com.vognev.textilewebproject.repository.OrderDeletedRepository;
 import com.vognev.textilewebproject.repository.OrderRepository;
-import com.vognev.textilewebproject.model.util.DateHelper;
+import com.vognev.textilewebproject.util.DateHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.zip.ZipFile;
 
 /**
  * textilewebproject_2  16/10/2021-20:05
@@ -65,11 +68,11 @@ public class OrderService {
             orderDtos.add(
                     new OrderDto(
                             order.getId(),
-                            order.getDat_dispatch(),
+                            order.getDispatch(),
                             order.getStatus(),
                             order.getDelivery(),
                             order.getInfo(),
-                            order.getDat_create(),
+                            order.getCreat(),
                             cartDtos,
                             OrderSumm.getOrderSumm(),
                             order.getUser().getId(),
@@ -78,8 +81,10 @@ public class OrderService {
                             order.getPhoneUser().getId(),
                             order.getPhoneUser().getPhone(),
                             order.getAddressUser().getId(),
-                            order.getAddressUser().getAddress(),
+                            order.getAddressUser().getRegion(),
+                            order.getAddressUser().getDistrict(),
                             order.getAddressUser().getCity(),
+                            order.getAddressUser().getAddress(),
                             order.getAddressUser().getPostCode(),
                             order.getPostOfficeUser().getId(),
                             order.getPostOfficeUser().getPostOffice())
@@ -105,11 +110,11 @@ public class OrderService {
             orderDtos.add(
                     new OrderDto(
                             order.getId(),
-                            order.getDat_dispatch(),
+                            order.getDispatch(),
                             order.getStatus(),
                             order.getDelivery(),
                             order.getInfo(),
-                            order.getDat_create(),
+                            order.getCreat(),
                             cartDtos,
                             OrderSumm.getOrderSumm(),
                             order.getUser().getId(),
@@ -118,8 +123,11 @@ public class OrderService {
                             order.getPhoneUser().getId(),
                             order.getPhoneUser().getPhone(),
                             order.getAddressUser().getId(),
-                            order.getAddressUser().getAddress(),
+                            order.getAddressUser().getRegion(),
+                            order.getAddressUser().getDistrict(),
                             order.getAddressUser().getCity(),
+                            order.getAddressUser().getAddress(),
+
                             order.getAddressUser().getPostCode(),
                             order.getPostOfficeUser().getId(),
                             order.getPostOfficeUser().getPostOffice())
@@ -183,7 +191,7 @@ public class OrderService {
 
         order.setUser(userService.getUser(user_id));
         order.setAddressUser(addressService.getAddressById(address_id));
-        order.setDat_dispatch(dat);
+        order.setDispatch(dat);
         order.setDelivery(delivery);
         order.setPhoneUser(phoneService.getPhoneById(phone_id));
         order.setPostOfficeUser(prostOfficeService.getPostOfficeById(post_office_id));
@@ -208,11 +216,11 @@ public class OrderService {
 
             OrderDto orderDto=new OrderDto(
                     order.getId(),
-                    order.getDat_dispatch(),
+                    order.getDispatch(),
                     order.getStatus(),
                     order.getDelivery(),
                     order.getInfo(),
-                    order.getDat_create(),
+                    order.getCreat(),
                     cartDtos,
                     OrderSumm.getOrderSumm(),
                     order.getUser().getId(),
@@ -221,8 +229,11 @@ public class OrderService {
                     order.getPhoneUser().getId(),
                     order.getPhoneUser().getPhone(),
                     order.getAddressUser().getId(),
-                    order.getAddressUser().getAddress(),
+                    order.getAddressUser().getRegion(),
+                    order.getAddressUser().getDistrict(),
                     order.getAddressUser().getCity(),
+                    order.getAddressUser().getAddress(),
+
                     order.getAddressUser().getPostCode(),
                     order.getPostOfficeUser().getId(),
                     order.getPostOfficeUser().getPostOffice());
@@ -254,7 +265,7 @@ public class OrderService {
             cr.setProduct_id(ad.getProductId());
             cr.setSalePrice(ad.getSellingPrice());
             cr.setNameProduct(ad.getProductName());
-            cr.setDiscount_price(ad.getBonus());;
+            cr.setDiscount_price(ad.getBonus());
             cr.setSiz(ad.getMetr());
 
             if(ad.getInfo()==null){
@@ -325,7 +336,7 @@ public class OrderService {
                 address,
                 order.getPostOfficeUser().getPostOffice(),
                 summ,
-                order.getDat_create(),
+                order.getCreat(),
                 dat_delete,
                 order.getStatus(),
                 info,
@@ -411,5 +422,178 @@ public class OrderService {
     List<Order> getListOrderByUserId(long userId) {
 
         return orderRepository.findAllByUser_Id(userId);
+    }
+
+
+    public Page<OrderDto> getOrderListAllPageable(Pageable pageable) {
+
+        Page<Order>pageOrder=orderRepository.findAll(pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+       Page<OrderDto> page = new PageImpl<>(orderDtos,pageable,totalElements);
+
+        return page;//toPage(orderDtos,pageable)orderDtos.size()
+    }
+
+
+    private List<OrderDto> convertListOrderToListOrderDto(List<Order> list){
+
+        List<OrderDto> orderDtos = new ArrayList<OrderDto>();
+
+        for(Order ord:list){
+
+            List<CartDto> cartDtos = cartService.getCartDtoListFromOrder(ord.getId(),ord.getCarts());
+
+            OrderDto orderDto = new OrderDto(ord.getId(),
+                    ord.getDispatch(),ord.getStatus(),ord.getDelivery(),
+                    ord.getInfo(),ord.getCreat(),
+                    cartDtos, OrderSumm.getOrderSumm(),ord.getUser().getId(),
+                    ord.getUser().getUsername(),ord.getUser().getName(),
+                    ord.getPhoneUser().getId(),ord.getPhoneUser().getPhone(),
+                    ord.getAddressUser().getId(),ord.getAddressUser().getRegion(),
+                    ord.getAddressUser().getDistrict(),
+                    ord.getAddressUser().getCity(),ord.getAddressUser().getAddress(),
+                    ord.getAddressUser().getPostCode(),
+                    ord.getPostOfficeUser().getId(),ord.getPostOfficeUser().getPostOffice());
+
+            orderDtos.add(orderDto);
+        }
+        return orderDtos;
+    }
+
+
+    public Page<Order> getPageOrders(Pageable pageable){
+
+        return orderRepository.findAll(pageable);
+     }
+
+
+    private Page<OrderDto> toPage(List<OrderDto> list, Pageable pageable) {
+
+        int start = (int) pageable.getOffset();
+
+        int end = Math.min((start + pageable.getPageSize()), list.size());
+//        System.out.println("start"+start);
+//        System.out.println("end"+end);
+//        System.out.println("pageable.getPageSize()"+pageable.getPageSize());
+        if(start > list.size())
+
+            return new PageImpl<>(new ArrayList<>(), pageable, list.size());
+
+        return new PageImpl<>(list.subList(start, end), pageable, list.size());
+    }
+
+
+    public Page<OrderDto> searchOrder(String point,String val,Pageable pageable){
+
+        switch (point){
+            case "2": return searchName(val,pageable);
+
+            case "1" :return searchUsername(val,pageable);
+
+            case "3" :return searchCreate(val,pageable);
+
+            case "4" :return searchDispatch(val,pageable);
+
+            case "5" :return searchUser_Phone(val,pageable);
+
+            case "6" :return searchDelivery(val,pageable);
+
+            case "7" : return searchStatus(val,pageable);
+
+            default: return null;
+        }
+    }
+
+
+    private Page<OrderDto> searchName(String val, Pageable pageable){
+
+        Page<Order> pageOrder = orderRepository.findByUser_Name(val,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return new PageImpl<>(orderDtos,pageable,totalElements);
+
+    }
+
+
+    private Page<OrderDto> searchUsername(String val, Pageable pageable){
+
+        Page<Order> pageOrder = orderRepository.findByUser_Username(val,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
+    }
+
+
+    private Page<OrderDto> searchCreate(String val, Pageable pageable){
+
+        Date dat= DateHelper.convertStringToDateFromSearch(val);
+
+        Page<Order> pageOrder = orderRepository.findAllByCreat(dat,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
+    }
+
+
+    private Page<OrderDto> searchDispatch(String val, Pageable pageable){
+
+        Date dat= DateHelper.convertStringToDateFromSearch(val);
+
+        Page<Order> pageOrder = orderRepository.findAllByDispatch(dat,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
+    }
+
+
+    private Page<OrderDto> searchUser_Phone(String val, Pageable pageable){
+
+        Page<Order> pageOrder = orderRepository.findByPhoneUser_Phone(val,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
+    }
+
+
+    private Page<OrderDto> searchDelivery(String val, Pageable pageable){
+
+        Page<Order> pageOrder = orderRepository.findByDelivery(val,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
+    }
+
+
+    private Page<OrderDto> searchStatus(String val, Pageable pageable){
+
+        Page<Order> pageOrder = orderRepository.findByStatus(val,pageable);
+
+        int totalElements=(int)pageOrder.getTotalElements();
+
+        List<OrderDto> orderDtos=convertListOrderToListOrderDto(pageOrder.getContent());
+
+        return  new PageImpl<>(orderDtos,pageable,totalElements);
     }
 }

@@ -2,7 +2,7 @@ package com.vognev.textilewebproject.service;
 
 
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.util.Constants;
+import com.vognev.textilewebproject.util.Constants;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -14,11 +14,8 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
-import static java.awt.SystemColor.info;
 import static org.assertj.core.api.Assertions.assertThat;
 /**
  * textile-store  10/01/2022-21:30
@@ -105,12 +102,14 @@ class OrderServiceTest {
 
     PhoneUser createPhone(MyUser myUser){
 
-        PhoneUser phoneUser = new PhoneUser("1234567890",true,myUser);
+        PhoneUser phoneUser = new PhoneUser("1234567890",true," ",myUser);
         return phoneService.save(phoneUser);
     }
 
     AddressUser createAddress(MyUser myUser){
-        AddressUser address = new AddressUser("city","address","postCode","info",true,myUser);
+        AddressUser address = new AddressUser("region",
+                "district" ,"city","address",
+                "postCode","info",true,myUser);
         return addressService.save(address);
     }
 

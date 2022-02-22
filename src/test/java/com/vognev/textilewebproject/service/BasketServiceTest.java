@@ -2,8 +2,7 @@ package com.vognev.textilewebproject.service;
 
 
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.dto.BasketDto;
-import com.vognev.textilewebproject.model.util.Constants;
+import com.vognev.textilewebproject.dto.BasketDto;
 import com.vognev.textilewebproject.repository.BasketRepository;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -148,7 +147,7 @@ class BasketServiceTest {
 
     @Test
     void addBasketToUser()throws Exception{
-        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888"));
 //        MyUser user =  new MyUser("test","test@test.test","1",100,true);
 //        PhoneUser phoneUser=new PhoneUser("123321",true,user);
 //        AddressUser addressUser = new AddressUser("city","address","1234567890"," ",user);
@@ -164,28 +163,28 @@ class BasketServiceTest {
 
     @Test
     void addBasketToUserAddress()throws Exception{
-        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888"));
 
         Assert.assertEquals(5,addressService.findAll().size());
 
     }
     @Test
     void addBasketToUserPhone()throws Exception{
-        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888"));
 
         Assert.assertEquals(7,phoneService.findAll().size());
 
     }
     @Test
     void addBasketToUserPostOffice()throws Exception{
-        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888"));
 
         Assert.assertEquals(6,postService.findAll().size());
     }
 
     @Test
     void addBasketToOrder()throws Exception{
-        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888",2L));
+        basketService.createOrder(new BasketDto("test","123321"," ","8888888888888888888"));
 
         Assert.assertEquals(3,orderService.findAll().size());
     }

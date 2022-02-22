@@ -19,7 +19,7 @@ public class Order {
     private Long id;
 
     @Temporal(TemporalType.DATE)
-    private Date dat_dispatch;
+    private Date dispatch;
 
    // @NotNull(message = "status cannot be empty")
     private String status;
@@ -30,9 +30,9 @@ public class Order {
     private String info;
 
     @Temporal(TemporalType.DATE)
-    private Date dat_create;
+    private Date creat;
 
-    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private List<Cart> carts = new ArrayList<>();
 
     @OneToOne(fetch =FetchType.EAGER)
@@ -55,21 +55,21 @@ public class Order {
     }
 
     public Order(Long id,
-                 Date dat_dispatch,
+                 Date dispatch,
                   String status,//@NotNull(message = "status cannot be empty")
                  String delivery, //@NotNull(message = "delivery cannot be empty")
                  String info_order,
-                 Date dat_create,
+                 Date creat,
                  MyUser user,
                  AddressUser addressUser,
                  PhoneUser phoneUser,
                  PostOfficeUser postOfficeUser) {
         this.id = id;
-        this.dat_dispatch = dat_dispatch;
+        this.dispatch = dispatch;
         this.status = status;
         this.delivery = delivery;
         this.info = info_order;
-        this.dat_create = dat_create;
+        this.creat = creat;
         this.user = user;
         this.addressUser = addressUser;
         this.phoneUser = phoneUser;
@@ -84,12 +84,12 @@ public class Order {
         this.id = id;
     }
 
-    public Date getDat_dispatch() {
-        return dat_dispatch;
+    public Date getDispatch() {
+        return dispatch;
     }
 
-    public void setDat_dispatch(Date dat_dispatch) {
-        this.dat_dispatch = dat_dispatch;
+    public void setDispatch(Date dispatch) {
+        this.dispatch = dispatch;
     }
 
     public String getStatus() {
@@ -116,12 +116,12 @@ public class Order {
         this.info = info;
     }
 
-    public Date getDat_create() {
-        return dat_create;
+    public Date getCreat() {
+        return creat;
     }
 
-    public void setDat_create(Date dat_create) {
-        this.dat_create = dat_create;
+    public void setCreat(Date creat) {
+        this.creat = creat;
     }
 
     public List<Cart> getCarts() {
@@ -163,4 +163,6 @@ public class Order {
     public void setPostOfficeUser(PostOfficeUser postOfficeUser) {
         this.postOfficeUser = postOfficeUser;
     }
+
+
 }

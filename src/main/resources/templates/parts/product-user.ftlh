@@ -2,14 +2,16 @@
 <@c.page>
 <#if userProductList??>
 <div class="container">
+<h4>${userProduct.name}</h4>
 <table class="centr">
     <COLGROUP>
         <COL width="5">
-        <COL width="350">
+        <COL width="400">
+        <COL width="100">
         <COL width="5">
         <COL width="10">
         <COL width="5">
-        <COL width="150">
+
         <COL width="150">
         <COL width="150">
 
@@ -17,15 +19,13 @@
     <thead>
     <tr >
         <th>id</th>
-        <th>Nick <br/> Імя  <br/> Телефон <br/> Адресса </th>
+        <th>Nick  Імя   Телефон  Адресса </th>
+        <th > метрів: </th>
         <th class="caption-table-vertical">№ карти</th>
         <th>Категорія </th>
-        <th class="caption-table">Назва Колір</th>
-        <th>Куплено м: </th>
-
-        <th>Опис</th>
+        <th class="caption-table">Колір</th>
+        <th>    Інфо   </th>
         <th>   Дата    </th>
-        <th>Інфо</th>
     </tr>
     </thead>
     <tbody>
@@ -33,14 +33,13 @@
     <tr>
         <td>${us.id}</td>
         <td>${us.username} <br/>  ${us.name} <br/> ${us.phone} <br/>${us.address}</td>
+        <td>${us.selling_size}</td>
         <td>${us.cartId}</td>
         <td>${us.category}</td>
-        <td>${us.nameProduct} <br/> ${us.color}</td>
-        <td>${us.selling_size}</td>
-        <td>${us.description}</td>
-
-        <td>${us.dat}</td>
+        <td> ${us.color}</td>
         <td>${us.info}</td>
+        <td>${us.dat}</td>
+
     </tr>
     </#list>
     </tbody>

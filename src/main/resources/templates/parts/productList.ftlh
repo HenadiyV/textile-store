@@ -1,17 +1,79 @@
 <#include "security.ftlh">
 <#import "pager.ftlh" as p>
 <@p.pager url page ></@p.pager>
+<style>
+    select,
+    input[type="text"] {
+        padding: 2px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        -webkit-appearance: none;
+    }
+    select {padding-right: 10px;}
+    .select {display: inline-block; position: relative;}
+    .select:after {
+        display: block;
+        position: absolute;
+        right: 5px;
+        content: '▼';
+        font-size: 0.6rem;
+        top: 50%;
+        pointer-events: none;
+        transform: translateY(-50%);
+    }
+    .number {
+        display: inline-block;
+        position: relative;
+        width: 100px;
+    }
+    .number input[type="number"] {
+        display: block;
+        height: 32px;
+        line-height: 32px;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+        text-align: center;
+        -moz-appearance: textfield;
+        -webkit-appearance: textfield;
+        appearance: textfield;
+    }
+    .number input[type="number"]::-webkit-outer-spin-button,
+    .number input[type="number"]::-webkit-inner-spin-button {
+        display: none;
+    }
+    .number-minus {
+        position: absolute;
+        top: 1px;
+        left: 1px;
+        bottom: 1px;
+        width: 20px;
+        padding: 0;
+        display: block;
+        text-align: center;
+        border: none;
+        border-right: 1px solid #ddd;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .number-plus {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        bottom: 1px;
+        width: 20px;
+        padding: 0;
+        display: block;
+        text-align: center;
+        border: none;
+        border-left: 1px solid #ddd;
+        font-size: 16px;
+        font-weight: 600;
+    }
+</style>
 <div class="container">
-    <div class="row">
-        <div class="col-10">
-        </div>
-        <div class="col-2">
-            <#--<a href="javascript:void(0);" onclick="test_user()">Tyt</a>-->
-        </div>
-    </div>
-
     <div class="row row-cols-1 row-cols-md-3 g-4 mt-1" id="product-list">
-
     <#list page.content as product>
         <div class="col">
             <div class="card">
@@ -33,12 +95,10 @@
                 </div>
                 <div class="card-body">
                     <a class="btn btn-primary disabled" name="add-basket" onclick="searchProduct(#{product.id})" >Замовити</a><br/>
-
                     <i>#${product.id}</i>
                     <span>Назва: ${product.name}</span>
                     <span>Колір: ${product.color}</span><br/>
                     <span>Ціна: ${product.sellingPrice}</span><br/>
-
                   <#if isAdmin>
                   <div style="border:1px solid #9c9c9c;background: #ffffcc">
                       <span>Ціна закупки: ${product.purchasePrice}</span><br/>
@@ -47,10 +107,8 @@
                       <span>Дата: ${product.dat?date?string('dd-MM-yyyy')}</span><br/>
                   </div>
                   </#if>
-
                 </div>
                 <div class="card-footer text-muted">
-
                     <#if product.description?length gt 0>
                         <b>${product.description}</b>
                     <#else>  Опис товару відсутній.
@@ -62,7 +120,6 @@
     Повідомлення відсутні
     </#list>
       </div>
-
     <#if user??>
         <div class="container">
             <div id="myBasketUser" class="modal">
@@ -85,9 +142,9 @@
                                             <label for="b_user">Ваше імя</label> <br/>
                                             <input type="text" name="userId" id="b_user" value="${user.id}" class="input-with"/><br/>
                                         </div>
+
                                         <div class="col-sm-4">
                                             <label for="b_phone">Ваш телефон</label> <br/>
-
                                             <select id="b_phone" name="phone"></select><br/>
                                         </div>
 
@@ -135,7 +192,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <span class="close" id="closeMyModalBasket">&times;</span>
-                        <h2>Оформити замовленя</h2>
+                        <h2>Оформити замовленя 2</h2>
                     </div>
                     <div class="modal-body">
                         <div class="title-cart">
@@ -147,17 +204,20 @@
 
                                 <form action="/basket/ordering" method="post">
                                     <label for="username">Ваше імя</label> <br/>
-                                    <input type="text" name="username" id="username" value=""/><br/>
+                                    <input type="text" name="username" id="o_username" value=""/><br/>
 
-                                    <label for="phone">Ваш телефон</label> <br/>
-                                    <input type="text" name="phone" id="phone" value=""/><br/>
+                                    <label for="phone">Ваш телефон:</label> <br/>
+                                    <input type="tel" name="phone" id="o_phone" autofocus="autofocus" maxlength="50"
+                                           value="+38(___)___-__-__" required="required"
+                                           pattern="\+38\[\(][0-9]{3}[\)]\d{3}[-]\d{2}[-]\d{2}"
+                                           placeholder="+38(___)___-__-__"/><br/>
 
                                     <label for="info">Додаткова інформація до замовленя</label><br/>
                                     <textarea name="info" id="info" cols="30" rows="3" style="width: 50%"></textarea><br/>
                                     <input type="hidden" name="token" id="token_ordering"/>
-                                    <input type="hidden" name="userId" id="userId" value="<#if user??>${user.id}<#else>0</#if>"/>
+
                                     <input type="hidden" class="input-with" name="_csrf"  value="${_csrf.token}"/>
-                                    <button class="btn btn-primary mt-1" type="submit">Замовити</button>
+                                    <button class="btn btn-primary mt-1" type="submit" id="o_btn_ordering" disabled="disabled">Замовити</button>
                                 </form>
 
                             </div>
@@ -230,10 +290,25 @@
     </div>
 </div>
 <script>
+    const o_username = document.getElementById("o_username");
+  // const o_phone = document.getElementById("o_phone");
+   const btn_ordering = document.getElementById("o_btn_ordering");
+   if(o_username ){
+       o_username.addEventListener("change",activeBtnOrdering);
+      // o_phone.addEventListener("change",activeBtnOrdering);&& o_phone
+   }
+   function activeBtnOrdering(){
+       if(o_username.value.length>2){
+           btn_ordering.disabled=false;
+       }else{
+           btn_ordering.disabled=true;
+       }
+   }
 
 </script>
 
 <script src="/static/js/image-view.js"></script>
 <script src="/static/js/product.js"></script>
+<script src="/static/js/phone.js"></script>
 
 

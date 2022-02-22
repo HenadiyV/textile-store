@@ -1,8 +1,7 @@
 package com.vognev.textilewebproject.service;
 
 import com.vognev.textilewebproject.model.*;
-import com.vognev.textilewebproject.model.util.Constants;
-import com.vognev.textilewebproject.repository.BasketProductRepository;
+import com.vognev.textilewebproject.util.Constants;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +18,6 @@ import java.util.Date;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * textilewebproject_3  03/01/2022-11:02
@@ -166,12 +164,13 @@ class BasketProductServiceTest {
 
     PhoneUser createPhone(MyUser myUser){
 
-        PhoneUser phoneUser = new PhoneUser("1234567890",true,myUser);
+        PhoneUser phoneUser = new PhoneUser("1234567890",true," ",myUser);
         return phoneService.save(phoneUser);
     }
 
     AddressUser createAddress(MyUser myUser){
-        AddressUser address = new AddressUser("city","address","postCode","info",true,myUser);
+        AddressUser address = new AddressUser("region",
+                "district" ,"city","address","postCode","info",true,myUser);
         return addressService.save(address);
     }
 

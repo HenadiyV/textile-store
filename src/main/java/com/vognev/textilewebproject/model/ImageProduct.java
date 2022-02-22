@@ -29,16 +29,16 @@ public class ImageProduct implements Serializable {
 
     private String info;
 
-    private int amount;
+
 
     public ImageProduct() {
     }
 
-    public ImageProduct(String imgProduct, boolean showcase, String info, int amount) {
+    public ImageProduct(String imgProduct, boolean showcase, String info) {
         this.imgProduct = imgProduct;
         this.showcase = showcase;
         this.info = info;
-        this.amount = amount;
+
     }
 
     public Long getId() {
@@ -81,12 +81,4 @@ public class ImageProduct implements Serializable {
         this.info = info;
     }
 
-
-    public int getAmount() {
-        return amount;
-    }
-
-    public void setAmount(int amount) {
-        this.amount = amount;
-    }
 }

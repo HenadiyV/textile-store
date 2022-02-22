@@ -7,7 +7,7 @@ import java.util.List;
  */
 public enum Status {
     TO_SEND ("на відправку"),
-    SENT ("відрправлено"),
+    SENT ("відправлено"),
     CANCELED("скасований"),
     PAID("оплачений"),
     NOT_PAID("не оплачений"),
